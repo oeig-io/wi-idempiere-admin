@@ -1,3 +1,14 @@
+---
+name: ssh-remote-connection
+description: SSH key creation and remote server access patterns for managing iDempiere infrastructure with secure password-less authentication
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: ssh-remote-connection-tool.md
+  category: infrastructure
+  scope: idempiere
+---
+
 # SSH Remote Connection Tool
 
 ## Summary

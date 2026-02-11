@@ -1,3 +1,14 @@
+---
+name: idempiere-info-window
+description: Info Windows configuration for iDempiere including AD_InfoWindow and AD_InfoColumn setup with filtering and process button integration
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-info-window-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Info Window Tool
 
 The purpose of this document is to provide patterns for creating Info Windows in iDempiere.

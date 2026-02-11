@@ -1,3 +1,14 @@
+---
+name: idempiere-column-create
+description: Add columns to existing iDempiere tables using the REST API including AD_Column creation and database synchronization
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-column-create-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Column Create Tool
 
 The purpose of this document is to describe how to add columns to existing tables in iDempiere using the REST API.

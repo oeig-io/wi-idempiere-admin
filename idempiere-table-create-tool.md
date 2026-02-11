@@ -1,3 +1,14 @@
+---
+name: idempiere-table-create
+description: Create new tables in iDempiere using the REST API including AD_Table record creation, table completion, and window generation
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-table-create-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Table Create Tool
 
 The purpose of this document is to describe how to create new tables in iDempiere using the REST API.

@@ -1,3 +1,14 @@
+---
+name: idempiere-code-validator
+description: Audit Groovy and SQL code for resource leaks, connection management issues, and coding conventions before iDempiere deployment
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-code-validator-tool.md
+  category: debugging
+  scope: idempiere
+---
+
 # iDempiere Code Validator Tool
 
 The purpose of this tool is to audit Groovy and SQL code for common issues before deployment.

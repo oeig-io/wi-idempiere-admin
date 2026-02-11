@@ -1,3 +1,14 @@
+---
+name: deploy-script-troubleshooting
+description: Common issues and solutions when writing SQL deploy scripts for iDempiere including unescaped quotes, delimiter problems, and identifier issues
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: deploy-script-troubleshooting-tool.md
+  category: debugging
+  scope: idempiere
+---
+
 # Deploy Script Troubleshooting
 
 Common issues when writing SQL deploy scripts for iDempiere.

@@ -1,3 +1,14 @@
+---
+name: idempiere-quick-info-widget
+description: Configure the Quick Info Widget for contextual information display in the right-side help panel using AD_Message, AD_StatusLine, and AD_StatusLineUsedIn
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-quick-info-widget-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Quick Info Widget Tool
 
 The Quick Info Widget displays contextual information in the right-side help panel. It is better than ColumnSQL because:

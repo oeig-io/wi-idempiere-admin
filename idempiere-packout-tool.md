@@ -1,3 +1,14 @@
+---
+name: idempiere-packout
+description: PackOut (2Pack) export workflow for creating portable XML packages in iDempiere for configuration migration between environments
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-packout-tool.md
+  category: integration
+  scope: idempiere
+---
+
 # iDempiere PackOut Tool
 
 The purpose of this document is to provide the workflow and reference for creating PackOut (2Pack) export records in iDempiere.

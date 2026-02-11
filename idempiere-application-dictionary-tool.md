@@ -1,3 +1,14 @@
+---
+name: idempiere-application-dictionary
+description: Foundational patterns for configuring iDempiere via Application Dictionary (AD) tables including standard INSERT patterns for AD tables, process relationships, info window structures, and button column configurations
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-application-dictionary-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Application Dictionary Tool
 
 The purpose of this document is to provide foundational patterns for configuring iDempiere via Application Dictionary (AD) tables.

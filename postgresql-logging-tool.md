@@ -1,3 +1,14 @@
+---
+name: postgresql-logging
+description: Enable and use PostgreSQL query logging to debug iDempiere issues including dynamic SQL analysis and query logic troubleshooting
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: postgresql-logging-tool.md
+  category: debugging
+  scope: idempiere
+---
+
 # PostgreSQL Logging Tool
 
 The purpose of this document is to describe how to enable and use PostgreSQL query logging to debug iDempiere issues.

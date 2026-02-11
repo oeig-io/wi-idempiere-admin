@@ -1,3 +1,14 @@
+---
+name: idempiere-rest-api
+description: REST API patterns for authentication, CRUD operations, nested record creation, process execution, and query filtering in iDempiere
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-rest-api-tool.md
+  category: integration
+  scope: idempiere
+---
+
 # iDempiere REST API Tool
 
 The purpose of this document is to provide working patterns for the iDempiere REST API.

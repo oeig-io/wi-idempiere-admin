@@ -1,3 +1,14 @@
+---
+name: idempiere-request
+description: Configure and use the Request system in iDempiere including request types, status categories, resolutions, and workflow management
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-request-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Request Tool
 
 The purpose of this document is to describe how to configure and use the Request system in iDempiere.

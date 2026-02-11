@@ -1,3 +1,14 @@
+---
+name: idempiere-callout
+description: Groovy callouts for UI field change events in iDempiere including AD_Rule creation and AD_Column.Callout configuration
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-callout-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Callout Tool
 
 The purpose of this document is to provide patterns for creating Groovy callouts in iDempiere.

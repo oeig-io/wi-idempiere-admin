@@ -1,3 +1,14 @@
+---
+name: idempiere-model-validator
+description: Groovy model validators for save events in iDempiere using Table Script Validator including AD_Rule and AD_Table_ScriptValidator configuration
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-model-validator-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Model Validator Tool
 
 The purpose of this document is to provide patterns for creating Groovy model validators in iDempiere using Table Script Validator.

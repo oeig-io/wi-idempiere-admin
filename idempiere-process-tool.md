@@ -1,3 +1,14 @@
+---
+name: idempiere-process
+description: Groovy processes implementation patterns for iDempiere including AD_Rule creation and AD_Process configuration with parameters
+compatibility: opencode
+metadata:
+  type: tool
+  original_file: idempiere-process-tool.md
+  category: application-dictionary
+  scope: idempiere
+---
+
 # iDempiere Process Tool
 
 The purpose of this document is to provide patterns for creating Groovy processes in iDempiere.
