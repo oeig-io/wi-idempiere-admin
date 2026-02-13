@@ -45,10 +45,28 @@ For setting calculated fields, use `TBN` and `TBC` (before events allow modifica
 | Column | Value | Notes |
 |--------|-------|-------|
 | value | `groovy:ScriptName` | Engine prefix required |
-| eventtype | `T` | Table Event (not `P` for Process) |
+| **eventtype** | **`T`** | **Table Events** - Row-level changes (TBN, TBC, TAN, TAC) |
+| **eventtype** | **`D`** | **Document Events** - Workflow actions (DBPR, DBCO, DCAC) |
+| **eventtype** | **`P`** | **Process Events** - Report/Process execution |
 | ruletype | `S` | JSR223 Scripting |
 | accesslevel | `3` | Client+Org (typical) |
 | script | Groovy code | Return empty string for success |
+
+> ⚠️ **CRITICAL**: Document events (DBPR, DBCO, DCAC, etc.) require `eventtype = 'D'`, not 'T'!  
+> Using 'T' for document events will silently fail - the validator won't execute with no error message.
+
+### Event Type Reference
+
+| Validator Type | AD_Rule.EventType | AD_Table_ScriptValidator.EventModelValidator | Description |
+|---------------|-------------------|----------------------------------------------|-------------|
+| Table (Before New) | `T` | `TBN` | Before INSERT on table |
+| Table (Before Change) | `T` | `TBC` | Before UPDATE on table |
+| Table (After New) | `T` | `TAN` | After INSERT on table |
+| Table (After Change) | `T` | `TAC` | After UPDATE on table |
+| Document (Before Prepare) | **`D`** | **`DBPR`** | Before document Prepare action |
+| Document (Before Complete) | **`D`** | **`DBCO`** | Before document Complete action |
+| Document (After Complete) | **`D`** | **`DCAC`** | After document Complete action |
+| Process | `P` | - | Report/Process execution |
 
 ```sql
 INSERT INTO ad_rule (
