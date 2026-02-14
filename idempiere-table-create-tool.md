@@ -176,6 +176,28 @@ curl -s -X POST "${API_URL}/processes/ad_table_createwindow" \
    - SQL: `UPDATE ad_tab SET issinglerow = 'N' WHERE ad_window_id = {WINDOW_ID};`
    - This is particularly important for material windows that may default to Detail view
 
+4. **Set Org Field to Read-Only and Hidden in Grid** - New windows should have the Organization field read-only and hidden from grid view (standard for ANS deployment):
+   - Note: The CreateTable process (CreateTable.java:481) hard-codes `@AD_Org_ID@` as the column default, so we cannot rely on defaultvalue checks. Target specific windows instead.
+   - SQL (replace `{WINDOW_ID}` or use window name):
+   ```sql
+   UPDATE ad_field f
+   SET isreadonly = 'Y',
+       isdisplayedgrid = 'N'
+   FROM ad_column c
+   WHERE f.ad_column_id = c.ad_column_id
+     AND c.columnname = 'AD_Org_ID'
+     AND f.ad_window_id = {WINDOW_ID};
+   ```
+   - Or use window name:
+   ```sql
+   UPDATE ad_field f
+   SET isreadonly = 'Y', isdisplayedgrid = 'N'
+   FROM ad_column c
+   WHERE f.ad_column_id = c.ad_column_id
+     AND c.columnname = 'AD_Org_ID'
+     AND f.ad_window_id = (SELECT ad_window_id FROM ad_window WHERE name = 'My Window' AND ad_client_id = 0);
+   ```
+
 ## Adding Columns
 
 After initial creation, add columns using [idempiere-column-create-tool.md](idempiere-column-create-tool.md).
