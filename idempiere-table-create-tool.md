@@ -18,6 +18,26 @@ The purpose of this document is to describe how to create new tables in iDempier
 - REST API access via System API Access role
 - See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication pattern
 
+## What You Need From Me
+
+Before executing this tool, provide:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| TableName | Technical DB table name with `{Callsign}_` prefix | `ANS_SlabInventory` |
+| Name | Human-readable display name (becomes Window/Tab name) | `Slab Inventory` |
+| Description | What this table stores | `Tracks slab inventory by warehouse` |
+| WindowType | Window type - `M` (Maintain) or `T` (Transaction) | `M` |
+| IsSOTrx | Sales transaction window? | `N` |
+| IsCreateMenu | Add to application menu? | `Y` |
+| AccessLevel | 3=Client+Org, 4=System, 7=All | `3` |
+
+**Special columns** (beyond standard Value, Name, Description, Help):
+- DocumentNo, DocAction, DocStatus, Processed (for Transaction type)
+- Other custom columns you want to add after initial creation
+
+**Callsign prefix**: Verify with your `deploy.properties` (typically `ANS`).
+
 ## Quick Reference
 
 | Step | Action | API/Method |
@@ -25,7 +45,8 @@ The purpose of this document is to describe how to create new tables in iDempier
 | 1 | Create AD_Table record | POST /models/ad_table |
 | 2 | Run Create/Complete Table | POST /processes/createtable |
 | 3 | Run Synchronize Database | See [idempiere-column-create-tool.md](idempiere-column-create-tool.md) |
-| 4 | Run Create Window Tab Field | POST /processes/ad_table_createwindow |
+| 4 | Run Create Window Tab Field (base tables) | POST /processes/ad_table_createwindow |
+| 4 | Create Subtab (link tables) | See [idempiere-subtab-create-tool.md](idempiere-subtab-create-tool.md) |
 
 ## Procedure
 
@@ -166,6 +187,50 @@ Custom tables must use the client callsign prefix from `deploy.properties`.
 | Name | Human-readable, spaces allowed | `Slab Inventory` |
 
 The callsign (e.g., `ANS`) is the tenant's Value/SearchKey in deploy.properties.
+
+## Link Tables
+
+The purpose of this section is to describe how to create link tables in iDempiere. This is important because link tables connect two base tables in a many-to-many relationship and require different configuration than standalone tables.
+
+### What is a Link Table
+
+A link table represents a many-to-many relationship between two base tables. For example, a product can have multiple finishes, and a finish can apply to multiple products.
+
+### Link Table Characteristics
+
+| Characteristic | Configuration |
+|----------------|---------------|
+| Primary key | Yes - enables change log, attachments |
+| Name field | No - use Description instead |
+| Standalone window | No - added as subtab to parent windows |
+| Standard columns | Skip `Name`, use `Description` |
+
+### Creating a Link Table
+
+Follow the same procedure as base tables with these modifications:
+
+1. **Create Table Record**: Set `IsCreateColName: "N"` to skip the Name column
+2. **Add Foreign Key Columns**: Add reference columns to both parent tables after initial creation
+3. **Create as Subtab**: Use [idempiere-subtab-create-tool.md](idempiere-subtab-create-tool.md) to add as subtab instead of creating a window
+
+### Example: Material Type Finish Link
+
+For a table linking `ANS_Mat_Type` and `ANS_Mat_Finish`:
+
+```bash
+# Create table without Name column
+curl -s -X POST "${API_URL}/models/ad_table" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $SESSION_TOKEN" \
+    -d '{
+        "TableName": "ANS_Mat_Type_Finish",
+        "Description": "Links material types with valid finishes",
+        "AccessLevel": "3",
+        "EntityType": "U"
+    }'
+```
+
+Then add foreign key columns and create as subtab to Material Types window.
 
 ## Process Reference
 
