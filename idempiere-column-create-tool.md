@@ -160,28 +160,37 @@ curl -s -X POST "${API_URL}/models/ad_field" \
 
 ## SQL Alternative
 
-For deploy scripts where API is not available.
+The purpose of this section is to provide SQL for creating columns in deploy scripts where REST API is not available.
+
+This is important because the REST API cannot properly set reference parameters for FK columns. Using SQL + ad_column-sync ensures iDempiere maintains FK constraints properly.
+
+### Step 1: Create AD_Element
 
 ```sql
--- 1. Create AD_Element (if not exists)
+-- Create AD_Element (if not exists)
 INSERT INTO ad_element (
     ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby,
     updated, updatedby, columnname, name, printname, description,
     entitytype, ad_element_uu
 )
 SELECT nextval('ad_element_sq'), 0, 0, 'Y', now(), 100, now(), 100,
-    'AD_Org_Location_ID', 'Location Organization', 'Location Organization',
-    'The organization where this warehouse is physically located',
+    'ANS_Mat_Category_ID', 'Category', 'Category',
+    'Material category reference',
     'U', uuid_generate_v4()::varchar
 WHERE NOT EXISTS (
-    SELECT 1 FROM ad_element WHERE columnname = 'AD_Org_Location_ID'
-);
+    SELECT 1 FROM ad_element WHERE columnname = 'ANS_Mat_Category_ID'
+)
+RETURNING ad_element_id, columnname;
+```
 
--- 2. Create AD_Column (Search + Reference Key for non-standard column name)
+### Step 2: Create AD_Column
+
+```sql
+-- Create AD_Column (Table Direct for FK)
 INSERT INTO ad_column (
     ad_column_id, ad_client_id, ad_org_id, isactive, created, createdby,
     updated, updatedby, name, description, version, entitytype, columnname,
-    ad_table_id, ad_reference_id, ad_reference_value_id, fieldlength,
+    ad_table_id, ad_reference_id, fieldlength,
     iskey, isparent, ismandatory, isupdateable, isidentifier, seqno,
     istranslated, isencrypted, isselectioncolumn, ad_element_id,
     issyncdatabase, isalwaysupdateable, isautocomplete, isallowlogging,
@@ -189,36 +198,46 @@ INSERT INTO ad_column (
     ispartitionkey, ad_column_uu
 )
 SELECT nextval('ad_column_sq'), 0, 0, 'Y', now(), 100, now(), 100,
-    'Location Organization',
-    'The organization where this warehouse is physically located',
-    1, 'U', 'AD_Org_Location_ID',
-    (SELECT ad_table_id FROM ad_table WHERE tablename = 'M_Warehouse'),
-    30,   -- Search reference
-    276,  -- AD_Org (all) reference key
+    'Category',
+    'Material category reference',
+    1, 'U', 'ANS_Mat_Category_ID',
+    (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type'),
+    19,  -- Table Direct
     10,
     'N', 'N', 'N', 'Y', 'N', 0,
     'N', 'N', 'N',
-    (SELECT ad_element_id FROM ad_element WHERE columnname = 'AD_Org_Location_ID'),
+    (SELECT ad_element_id FROM ad_element WHERE columnname = 'ANS_Mat_Category_ID'),
     'N', 'N', 'N', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N',
     uuid_generate_v4()::varchar
 WHERE NOT EXISTS (
     SELECT 1 FROM ad_column
-    WHERE columnname = 'AD_Org_Location_ID'
-      AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'M_Warehouse')
-);
+    WHERE columnname = 'ANS_Mat_Category_ID'
+      AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
+)
+RETURNING ad_column_id, columnname;
+```
 
--- 3. Create database column
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns
-        WHERE table_name = 'm_warehouse' AND column_name = 'ad_org_location_id'
-    ) THEN
-        EXECUTE 'ALTER TABLE m_warehouse ADD COLUMN ad_org_location_id NUMERIC(10)';
-    END IF;
-END $$;
+### Step 3: Sync Database (CRITICAL)
 
--- 4. Create AD_Field
+The purpose of running ad_column-sync process is to let iDempiere create the database column and maintain FK constraints properly.
+
+**Do NOT use manual ALTER TABLE** - it bypasses iDempiere's FK constraint management.
+
+```bash
+# After AD_Column creation, run sync process
+curl -s -X POST "${API_URL}/processes/ad_column-sync" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $SESSION_TOKEN" \
+    -d '{
+        "model-name": "ad_column",
+        "record-id": <COLUMN_ID>
+    }'
+```
+
+### Step 4: Create AD_Field
+
+```sql
+-- Create AD_Field (if not exists)
 INSERT INTO ad_field (
     ad_field_id, ad_client_id, ad_org_id, isactive, created, createdby,
     updated, updatedby, name, description, ad_tab_id, ad_column_id,
@@ -227,21 +246,21 @@ INSERT INTO ad_field (
     isdefaultfocus, columnspan
 )
 SELECT nextval('ad_field_sq'), 0, 0, 'Y', now(), 100, now(), 100,
-    'Location Organization',
-    'The organization where this warehouse is physically located',
+    'Category',
+    'Material category reference',
     (SELECT ad_tab_id FROM ad_tab WHERE ad_table_id =
-        (SELECT ad_table_id FROM ad_table WHERE tablename = 'M_Warehouse')
+        (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
         AND seqno = 10),
     (SELECT ad_column_id FROM ad_column
-     WHERE columnname = 'AD_Org_Location_ID'
-       AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'M_Warehouse')),
-    'Y', 10, 'N', 100, 'N', 'N', 'N', 'N', 'U',
+     WHERE columnname = 'ANS_Mat_Category_ID'
+       AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')),
+    'Y', 10, 'N', 60, 'N', 'N', 'N', 'N', 'U',
     uuid_generate_v4()::varchar, 'Y', 'N', 2
 WHERE NOT EXISTS (
     SELECT 1 FROM ad_field f
     JOIN ad_column c ON f.ad_column_id = c.ad_column_id
-    WHERE c.columnname = 'AD_Org_Location_ID'
-      AND c.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'M_Warehouse')
+    WHERE c.columnname = 'ANS_Mat_Category_ID'
+      AND c.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
 );
 ```
 
