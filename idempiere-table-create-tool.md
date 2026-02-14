@@ -181,21 +181,22 @@ curl -s -X POST "${API_URL}/processes/ad_table_createwindow" \
    - SQL (replace `{WINDOW_ID}` or use window name):
    ```sql
    UPDATE ad_field f
-   SET isreadonly = 'Y',
-       isdisplayedgrid = 'N'
-   FROM ad_column c
+   SET isreadonly = 'Y', isdisplayedgrid = 'N'
+   FROM ad_column c, ad_tab t
    WHERE f.ad_column_id = c.ad_column_id
+     AND f.ad_tab_id = t.ad_tab_id
      AND c.columnname = 'AD_Org_ID'
-     AND f.ad_window_id = {WINDOW_ID};
+     AND t.ad_window_id = {WINDOW_ID};
    ```
    - Or use window name:
    ```sql
    UPDATE ad_field f
    SET isreadonly = 'Y', isdisplayedgrid = 'N'
-   FROM ad_column c
+   FROM ad_column c, ad_tab t
    WHERE f.ad_column_id = c.ad_column_id
+     AND f.ad_tab_id = t.ad_tab_id
      AND c.columnname = 'AD_Org_ID'
-     AND f.ad_window_id = (SELECT ad_window_id FROM ad_window WHERE name = 'My Window' AND ad_client_id = 0);
+     AND t.ad_window_id = (SELECT ad_window_id FROM ad_window WHERE name = 'My Window' AND ad_client_id = 0);
    ```
 
 ## Adding Columns
