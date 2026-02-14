@@ -170,6 +170,11 @@ curl -s -X POST "${API_URL}/processes/ad_table_createwindow" \
 
 1. **Grant Role Access** - Add window access to appropriate roles
 2. **Reset Cache** - System Admin => Cache Reset
+3. **Set Tab Display Mode to Grid** - After creating the window, verify that all tabs are set to Grid view, not Detail. By default, new windows may open in Detail mode. To ensure consistency:
+   - Open the Window (AD_Window) record in Application Dictionary
+   - For each Tab, find the **Single Row** field and set it to `No` (Grid view)
+   - SQL: `UPDATE ad_tab SET issinglerow = 'N' WHERE ad_window_id = {WINDOW_ID};`
+   - This is particularly important for material windows that may default to Detail view
 
 ## Adding Columns
 
