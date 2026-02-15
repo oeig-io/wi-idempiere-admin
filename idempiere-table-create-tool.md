@@ -135,8 +135,38 @@ Custom tables must use the client callsign prefix from `deploy.properties`.
 
 ## Link Tables
 
-The purpose of this section is to describe how to create link tables. This is important because many-to-many relationships require subtabs, not standalone windows.
+The purpose of this section is to describe how to create link tables in iDempiere. This is important because many-to-many relationships between base tables require subtabs, not standalone windows, to maintain data integrity and proper navigation.
 
-See [idempiere-subtab-create-tool.md](idempiere-subtab-create-tool.md) for details.
+### Link Table Requirements
+
+| Requirement | Description |
+|-------------|-------------|
+| Primary key | REQUIRED - enables change log and attachments |
+| UUID column | REQUIRED - `IsCreateKeyColumn=Y` creates both PK and UUID |
+| Name field | OMIT - use Description instead (no standalone window) |
+| FK columns | Add via [idempiere-column-create-tool.md](idempiere-column-create-tool.md) |
+| Standalone window | NO - added as subtab to parent window |
+
+### Example: Product Price Subtab
+
+The Product window => Price subtab demonstrates the link table pattern:
+
+| Column | Purpose |
+|--------|---------|
+| M_ProductPrice_ID | Primary key (from IsCreateKeyColumn) |
+| M_ProductPrice_UU | UUID for external references |
+| M_Product_ID | FK to Product (parent) |
+| M_PriceList_Version_ID | FK to Price List Version (parent) |
+| PriceList, PriceStd, PriceLimit | Price values |
+
+### Creation Steps
+
+1. Create table record with `IsCreateKeyColumn: "Y"`
+2. Skip Name column (set `IsCreateColName: "N"`)
+3. Add FK columns to parent tables via SQL
+4. Sync database once at end
+5. Add as subtab (not standalone window)
+
+> **📝 Note** - See Product window => Price subtab in Application Dictionary for live example.
 
 Tags: #tool #idempiere #application-dictionary #table-create
