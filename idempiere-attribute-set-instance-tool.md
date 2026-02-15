@@ -287,6 +287,20 @@ INSERT INTO m_attributeuse (
 -- seqno = 10 determines display order (ascending)
 ```
 
+### Important: Setting isinstanceattribute
+
+When using direct SQL inserts (bypassing the iDempiere model), the `m_attributeset.isinstanceattribute` field is NOT automatically updated when attributeuse records are saved. You must manually set this value after creating the attributeuse records:
+
+```sql
+-- For instance attributes (each inventory has unique values)
+UPDATE m_attributeset SET isinstanceattribute = 'Y' WHERE m_attributeset_id = v_attributeset_id;
+
+-- For product attributes (all products share the same values)
+UPDATE m_attributeset SET isinstanceattribute = 'N' WHERE m_attributeset_id = v_attributeset_id;
+```
+
+This is required because the iDempiere model normally calculates this based on the attributes linked via m_attributeuse - if any linked attribute has `isinstanceattribute = 'Y'`, the attribute set becomes an instance attribute set.
+
 ## Key Tables Reference
 
 | Table | Purpose |
