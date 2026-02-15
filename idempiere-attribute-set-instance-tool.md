@@ -141,6 +141,8 @@ The `m_attributeset.m_attributeset_type` column controls how attribute values ar
 
 Use for instance attributes. Values stored in M_AttributeInstance per inventory transaction.
 
+**Important:** Always explicitly set `islot` and `isserno` to 'N' unless the user explicitly requests lot or serial number tracking. This ensures tiles/slabs are not incorrectly marked as tracked inventory.
+
 ```sql
 INSERT INTO m_attributeset (
     m_attributeset_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -156,21 +158,26 @@ INSERT INTO m_attributeset (
     'N', uuid_generate_v4()
 );
 -- m_attributeset_type defaults to MMS
+-- IMPORTANT: Always set islot='N' and isserno='N' unless explicitly requested
 ```
 
 ### Table Attribute (TA)
 
 Use for product attributes. Values stored in AD_TableAttribute at the product level. Note: MMS also works for product attributes (used in Tile example).
 
+**Important:** Even with TA type, explicitly set `islot` and `isserno` to 'N' unless the user explicitly requests lot or serial number tracking.
+
 ```sql
 INSERT INTO m_attributeset (
     m_attributeset_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
     name, description, isinstanceattribute,
+    islot, islotmandatory, isserno, issernomandatory,
     m_attributeset_type, m_attributeset_uu
 ) VALUES (
     nextval('m_attributeset_sq'), v_client_id, 0, 'Y', now(), 100, now(), 100,
     'Tile', 'Product attributes for tiles', 'N',
-    'MMS', uuid_generate_v4()
+    'N', 'N', 'N', 'N',
+    'TA', uuid_generate_v4()
 );
 ```
 
