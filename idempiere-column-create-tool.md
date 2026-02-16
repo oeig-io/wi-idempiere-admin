@@ -40,6 +40,24 @@ The purpose of this document is to describe how to add columns to existing table
 | 29 | Quantity | Quantities | 22 |
 | 30 | Search | FK with popup (any column name) | 10 |
 
+### Boolean Columns (Yes-No)
+
+> **⚠️ Warning** - Yes-No (boolean) columns must always be `IsMandatory: true` with `DefaultValue: 'N'`. Null boolean states in the database cause system instability and UI issues.
+
+**Naming Convention:** Boolean columns follow iDempiere's standard `IsXxx` pattern without the tenant prefix:
+
+| Pattern | Example | Use For |
+|---------|---------|---------|
+| `IsXxx` | `IsANSTemplate` | Custom boolean flags (no tenant prefix) |
+| `IsXxx` | `IsActive`, `IsSummary` | Standard iDempiere booleans |
+
+**Field Layout:** Checkbox fields require proper layout settings for the label to appear correctly:
+
+```sql
+xposition = 2,    -- Horizontal position
+columnspan = 2    -- Label appears to right of checkbox
+```
+
 ### Table Direct vs Search
 
 | Reference | When to Use | AD_Reference_Value_ID |
