@@ -37,12 +37,45 @@ INSERT INTO ad_infowindow (
     'Description',
     260,  -- ad_table_id
     'U',
-    'basetable t join othertable o on t.fk_id = o.id',
+    E'M_Product p
+LEFT OUTER JOIN M_ProductPrice pr ON (p.M_Product_ID=pr.M_Product_ID AND pr.IsActive=''Y'')
+LEFT OUTER JOIN M_AttributeSet pa ON (p.M_AttributeSet_ID=pa.M_AttributeSet_ID)',
     'N', uuid_generate_v4()::varchar, 'N', 'N',
     '1',  -- references seqno of sort column
     'Y', 'N', 0, 'Y', 0
 );
 ```
+
+## Fromclause Requirements
+
+### Required Format
+
+iDempiere's `AccessSqlParser` requires specific formatting for fromclause to work correctly.
+
+| Requirement | Description | Example | Required? |
+|-------------|-------------|---------|-----------|
+| **Parentheses** | ON conditions wrapped in `()` | `ON (t.id=o.fk_id)` | **YES** - Parser fails without these |
+| **Multi-line** | One table/join per line | Each JOIN on separate line | Preferred |
+| **No spaces** | No spaces around `=` in ON conditions | `ON (t.id=o.fk_id)` NOT `ON (t.id = o.fk_id)` | Recommended |
+| **OUTER keyword** | Use `LEFT OUTER JOIN` not `LEFT JOIN` | `LEFT OUTER JOIN` | Preferred but optional |
+| **E'' literal** | Use PostgreSQL E'' for newlines | `E'M_Product p\nJOIN...'` | Required for multi-line |
+
+**Critical: Parentheses are mandatory.** The parser looks for `ON (` and expects a closing `)`. Without parentheses, you get the "Could not remove ON" error.
+
+**Note on JOIN keywords:** The parser handles `JOIN`, `INNER JOIN`, `LEFT JOIN`, and `LEFT OUTER JOIN` via regex replacement. While `LEFT OUTER JOIN` is preferred for clarity, `LEFT JOIN` also works if parentheses are present.
+
+### Example: Inventory ASI Info Window
+
+```sql
+E'M_AttributeSetInstance t
+JOIN M_StorageOnHand soh ON (t.M_AttributeSetInstance_ID=soh.M_AttributeSetInstance_ID AND soh.QtyOnHand>0)
+JOIN M_Locator l ON (soh.M_Locator_ID=l.M_Locator_ID)
+JOIN M_Warehouse w ON (l.M_Warehouse_ID=w.M_Warehouse_ID)
+JOIN M_Product p ON (soh.M_Product_ID=p.M_Product_ID)
+LEFT OUTER JOIN M_AttributeSetInstance pasi ON (p.M_AttributeSetInstance_ID=pasi.M_AttributeSetInstance_ID)'
+```
+
+**Common Error:** If you see "Could not remove ON" in the log, your fromclause format is incorrect. The parser strips out JOINs it doesn't understand, leaving orphaned table references.
 
 ## AD_InfoColumn
 
