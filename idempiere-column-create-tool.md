@@ -256,6 +256,10 @@ curl -s -X POST "${API_URL}/processes/ad_column-sync" \
 
 > 🔗 **Reference:** See [idempiere-window-tool.md](idempiere-window-tool.md) for field positioning and layout options (XPosition, ColumnSpan, SeqNo).
 
+**Option A: Manual INSERT (Full Control)**
+
+Use SQL INSERT for precise control over individual field properties:
+
 ```sql
 -- Create AD_Field (if not exists)
 INSERT INTO ad_field (
@@ -283,6 +287,22 @@ WHERE NOT EXISTS (
       AND c.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')
 );
 ```
+
+**Option B: Create Fields Process (Bulk)**
+
+For link table subtabs created manually (not via `ad_table_createwindow`), run the Create Fields process to generate all AD_Field records at once:
+
+```bash
+curl -s -X POST "${API_URL}/processes/ad_tab_createfields" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $SESSION_TOKEN" \
+    -d "{
+        \"model-name\": \"ad_tab\",
+        \"record-id\": ${TAB_ID}
+    }"
+```
+
+**Note:** This process creates fields for standard columns (AD_Client_ID, AD_Org_ID, IsActive, FK columns, PK, UUID) but skips audit columns (Created, CreatedBy, Updated, UpdatedBy) by design. After running, UPDATE field properties as needed to configure parent FK as read-only and hidden in grid view.
 
 ## Common Lookups
 

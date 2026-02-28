@@ -165,7 +165,7 @@ The Product window => Price subtab demonstrates the link table pattern:
 2. Skip Name column (set `IsCreateColName: "N"`)
 3. Add FK columns to parent tables via SQL
 4. Sync database once at end
-5. Add as subtab (not standalone window)
+5. Add as subtab (not standalone window), then create fields using [idempiere-column-create-tool.md](idempiere-column-create-tool.md) Step 4. For bulk field creation, use Option B (Create Fields Process).
 
 > **📝 Note** - See Product window => Price subtab in Application Dictionary for live example.
 
