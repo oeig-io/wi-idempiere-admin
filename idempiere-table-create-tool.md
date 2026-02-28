@@ -13,7 +13,7 @@ metadata:
 
 The purpose of this document is to create custom tables in iDempiere with windows for data management.
 
-This is important because ANS business operations require custom material attribute tables (categories, types, finishes, etc.) sourced from Sage that need their own windows.
+This is important because ACME business operations require custom material attribute tables (categories, types, finishes, etc.) sourced from external systems that need their own windows.
 
 ## Prerequisites
 
@@ -120,7 +120,7 @@ curl -s -X POST "${API_URL}/processes/ad_table_createwindow" \
 
 ## Post-Creation
 
-1. **Grant Role Access**: Add window access to ANS roles
+1. **Grant Role Access**: Add window access to ACME roles
 2. **Set Tab to Grid View**: `UPDATE ad_tab SET issinglerow = 'N' WHERE ad_window_id = {WINDOW_ID};`
 3. **Set Org Field Read-Only**: See standard configuration in [idempiere-column-create-tool.md](idempiere-column-create-tool.md)
 
@@ -130,7 +130,7 @@ Custom tables must use the client callsign prefix from `deploy.properties`.
 
 | Field | Convention | Example |
 |-------|------------|---------|
-| TableName | `{Callsign}_` prefix, PascalCase | `ANS_Mat_Type` |
+| TableName | `{Callsign}_` prefix, PascalCase | `ACME_Mat_Type` |
 | Name | Human-readable, spaces allowed | `Material Types` |
 
 ## Link Tables

@@ -11,7 +11,7 @@ metadata:
 
 # iDempiere Business Partner Tool
 
-The purpose of this tool is to define how ANS creates and manages business partners (customers, vendors, employees) and their associated contacts/login users.
+The purpose of this tool is to define how ACME creates and manages business partners (customers, vendors, employees) and their associated contacts/login users.
 
 This is important because proper BP setup ensures correct accounting, access control, and financial engagement tracking across all organizations.
 
@@ -165,8 +165,8 @@ POST /api/v1/models/ad_user
   "C_BPartner_ID": {"id": 1000208},
   "Value": "brian.sweeney",
   "Name": "Brian Sweeney",
-  "EMail": "brian.sweeney@allnaturalstone.com",
-  "Password": "changeme123"
+  "EMail": "user@example.com",
+  "Password": "[SET_PASSWORD]"
 }
 ```
 
@@ -219,8 +219,8 @@ POST /api/v1/models/ad_user
   "AD_Org_ID": {"id": 0},
   "Value": "admin.user",
   "Name": "Admin User",
-  "EMail": "admin@allnaturalstone.com",
-  "Password": "changeme123"
+  "EMail": "admin@example.com",
+  "Password": "[SET_PASSWORD]"
 }
 ```
 
@@ -241,25 +241,25 @@ Vendor who receives POs but doesn't log in:
 
 ```sql
 -- BP
-INSERT INTO c_bpartner (...) VALUES (1000208, 1000000, 0, 'Y', 'STONE-SUPPLIER', 'Stone Supplier Inc', 1000000, 'N', 'N', 'Y', ...);
+INSERT INTO c_bpartner (...) VALUES (1000208, [CLIENT_ID], 0, 'Y', 'STONE-SUPPLIER', 'Stone Supplier Inc', [BP_GROUP_ID], 'N', 'N', 'Y', ...);
 
 -- Contact (no login)
-INSERT INTO ad_user (...) VALUES (1000002, 1000000, 0, 'Y', 1000208, 'mike.stone', 'Mike Stone', 'mike@stonesupplier.example.com', ...);
+INSERT INTO ad_user (...) VALUES (1000002, [CLIENT_ID], 0, 'Y', 1000208, 'mike.stone', 'Mike Stone', 'mike@stonesupplier.example.com', ...);
 ```
 
 ### Example 2: Employee with iDempiere Access
 
-Employee who needs to log in as ANS Admin:
+Employee who needs to log in as ACME Admin:
 
 ```sql
 -- BP
-INSERT INTO c_bpartner (...) VALUES (1000210, 1000000, 0, 'Y', 'brian.sweeney', 'Brian Sweeney', 1000000, 'Y', 'N', 'N', ...);
+INSERT INTO c_bpartner (...) VALUES (1000210, [CLIENT_ID], 0, 'Y', 'brian.sweeney', 'Brian Sweeney', [BP_GROUP_ID], 'Y', 'N', 'N', ...);
 
 -- Contact with login
-INSERT INTO ad_user (...) VALUES (1000030, 1000000, 0, 'Y', 1000210, 'brian.sweeney', 'Brian Sweeney', 'brian.sweeney@allnaturalstone.com', 'brian.sweeney', ...);
+INSERT INTO ad_user (...) VALUES (1000030, [CLIENT_ID], 0, 'Y', 1000210, 'brian.sweeney', 'Brian Sweeney', 'brian.sweeney@example.com', 'brian.sweeney', ...);
 
 -- Role assignment (enables login)
-INSERT INTO ad_user_roles (...) VALUES (1000030, 1000000, 0, 1000030, 1000001, 'Y', ...); -- ANS Admin role
+INSERT INTO ad_user_roles (...) VALUES (1000030, [CLIENT_ID], 0, 1000030, 1000001, 'Y', ...); -- ACME Admin role
 ```
 
 ### Example 3: Standalone Admin User
@@ -268,10 +268,10 @@ System administrator not tracked as employee:
 
 ```sql
 -- Login user only (no BP)
-INSERT INTO ad_user (...) VALUES (1000031, 1000000, 0, 'Y', NULL, 'ans-admin', 'ANS-admin', 'admin@allnaturalstone.com', 'ANS-admin', ...);
+INSERT INTO ad_user (...) VALUES (1000031, [CLIENT_ID], 0, 'Y', NULL, 'admin-user', 'ACME-admin', 'admin@example.com', 'ACME-admin', ...);
 
 -- Role assignment
-INSERT INTO ad_user_roles (...) VALUES (1000031, 1000000, 0, 1000031, 1000001, 'Y', ...); -- ANS Admin role
+INSERT INTO ad_user_roles (...) VALUES (1000031, [CLIENT_ID], 0, 1000031, 1000001, 'Y', ...); -- ACME Admin role
 ```
 
 ## Verification

@@ -85,7 +85,7 @@ Common reference keys:
 
 **Create new element when:**
 - Column name doesn't exist in AD_Element
-- Custom columns must use client callsign prefix (e.g., `ANS_` from deploy.properties)
+- Custom columns must use client callsign prefix (e.g., `ACME_` from deploy.properties)
 
 **Use existing element when:**
 - Adding standard iDempiere column (e.g., another `M_Product_ID` reference)
@@ -192,11 +192,11 @@ INSERT INTO ad_element (
     entitytype, ad_element_uu
 )
 SELECT nextval('ad_element_sq'), 0, 0, 'Y', now(), 100, now(), 100,
-    'ANS_Mat_Category_ID', 'Category', 'Category',
+    'ACME_Mat_Category_ID', 'Category', 'Category',
     'Material category reference',
     'U', uuid_generate_v4()::varchar
 WHERE NOT EXISTS (
-    SELECT 1 FROM ad_element WHERE columnname = 'ANS_Mat_Category_ID'
+    SELECT 1 FROM ad_element WHERE columnname = 'ACME_Mat_Category_ID'
 )
 RETURNING ad_element_id, columnname;
 ```
@@ -218,19 +218,19 @@ INSERT INTO ad_column (
 SELECT nextval('ad_column_sq'), 0, 0, 'Y', now(), 100, now(), 100,
     'Category',
     'Material category reference',
-    1, 'U', 'ANS_Mat_Category_ID',
-    (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type'),
+    1, 'U', 'ACME_Mat_Category_ID',
+    (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type'),
     19,  -- Table Direct
     10,
     'N', 'N', 'N', 'Y', 'N', 0,
     'N', 'N', 'N',
-    (SELECT ad_element_id FROM ad_element WHERE columnname = 'ANS_Mat_Category_ID'),
+    (SELECT ad_element_id FROM ad_element WHERE columnname = 'ACME_Mat_Category_ID'),
     'N', 'N', 'N', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N',
     uuid_generate_v4()::varchar
 WHERE NOT EXISTS (
     SELECT 1 FROM ad_column
-    WHERE columnname = 'ANS_Mat_Category_ID'
-      AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
+    WHERE columnname = 'ACME_Mat_Category_ID'
+      AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')
 )
 RETURNING ad_column_id, columnname;
 ```
@@ -269,18 +269,18 @@ SELECT nextval('ad_field_sq'), 0, 0, 'Y', now(), 100, now(), 100,
     'Category',
     'Material category reference',
     (SELECT ad_tab_id FROM ad_tab WHERE ad_table_id =
-        (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
+        (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')
         AND seqno = 10),
     (SELECT ad_column_id FROM ad_column
-     WHERE columnname = 'ANS_Mat_Category_ID'
-       AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')),
+     WHERE columnname = 'ACME_Mat_Category_ID'
+       AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')),
     'Y', 10, 'N', 60, 'N', 'N', 'N', 'N', 'U',
     uuid_generate_v4()::varchar, 'Y', 'N', 2
 WHERE NOT EXISTS (
     SELECT 1 FROM ad_field f
     JOIN ad_column c ON f.ad_column_id = c.ad_column_id
-    WHERE c.columnname = 'ANS_Mat_Category_ID'
-      AND c.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type')
+    WHERE c.columnname = 'ACME_Mat_Category_ID'
+      AND c.ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')
 );
 ```
 
@@ -309,10 +309,10 @@ Custom columns must use the client callsign prefix from `deploy.properties`.
 
 | Item | Convention | Example |
 |------|------------|---------|
-| Custom column | `{Callsign}_DescriptiveName_ID` | `ANS_Org_Location_ID` |
+| Custom column | `{Callsign}_DescriptiveName_ID` | `ACME_Org_Location_ID` |
 | Standard column | Use existing element | `M_Product_ID` |
 
-The callsign (e.g., `ANS`) is the tenant's Value/SearchKey in deploy.properties.
+The callsign (e.g., `ACME`) is the tenant's Value/SearchKey in deploy.properties.
 
 ## Post-Creation
 

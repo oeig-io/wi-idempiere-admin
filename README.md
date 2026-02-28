@@ -1,6 +1,6 @@
 # iDempiere Enhancement
 
-Work instructions for planning and executing iDempiere changes at ANS.
+Work instructions for planning and executing iDempiere changes.
 
 ## Work Instructions
 

@@ -13,7 +13,7 @@ metadata:
 
 ## Summary
 
-The purpose of this document is to describe how to create a local SSH key and connect to ANS infrastructure after an admin has added your public key.
+The purpose of this document is to describe how to create a local SSH key and connect to your infrastructure after an admin has added your public key.
 
 This is important because SSH key authentication provides secure, password-less access to remote systems.
 

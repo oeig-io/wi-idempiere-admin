@@ -1,6 +1,6 @@
 # System Admin Role
 
-The purpose of this role is to load go-live data and configure the iDempiere tenant for ANS-specific needs.
+The purpose of this role is to load go-live data and configure the iDempiere tenant for ACME-specific needs.
 
 ## Responsibilities
 

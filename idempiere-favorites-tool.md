@@ -78,7 +78,7 @@ Individual menu items and folders. Child nodes reference parent folders via `par
 | issummary | 'Y' = folder, 'N' = menu item |
 | parent_id | Parent folder node ID (NULL = root level) |
 | seqno | Display order within parent (0 = alphabetical) |
-| ad_client_id | Client context (ANS = 1000000) |
+| ad_client_id | Client context ([CLIENT_ID]) |
 
 > **📝 Note:** Items display alphabetically when `seqno = 0`. Users can drag-and-drop reorder via WebUI.
 
@@ -101,9 +101,9 @@ BEGIN
     FROM ad_tree_favorite
     WHERE ad_user_id = <user_id>;
 
-    -- Get ANS client ID
+    -- Get ACME client ID
     SELECT ad_client_id INTO v_client_id
-    FROM ad_client WHERE name = 'ANS';
+    FROM ad_client WHERE name = 'ACME';
 
     -- Create favorites
     FOREACH v_menu_id IN ARRAY v_menu_ids
@@ -175,9 +175,9 @@ BEGIN
     SELECT ad_tree_favorite_id INTO v_favorite_id
     FROM ad_tree_favorite WHERE ad_user_id = 100;
 
-    -- Get ANS client ID
+    -- Get ACME client ID
     SELECT ad_client_id INTO v_client_id
-    FROM ad_client WHERE name = 'ANS';
+    FROM ad_client WHERE name = 'ACME';
 
     -- Create folder
     INSERT INTO ad_tree_favorite_node (
@@ -230,7 +230,7 @@ Query users by role and apply favorites programmatically. See the deploy script 
 
 ## Common Menu IDs
 
-Frequently used favorites for ANS operations:
+Frequently used favorites for ACME operations:
 
 | Menu ID | Name | Purpose |
 |---------|------|---------|
@@ -279,7 +279,7 @@ JOIN ad_client c ON tfn.ad_client_id = c.ad_client_id
 WHERE tfn.ad_tree_favorite_id = (
     SELECT ad_tree_favorite_id FROM ad_tree_favorite WHERE ad_user_id = 100
 )
-AND tfn.ad_client_id = 1000000  -- ANS
+AND tfn.ad_client_id = [CLIENT_ID]  -- ACME
 ORDER BY tfn.seqno;
 ```
 
