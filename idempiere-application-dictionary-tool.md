@@ -49,6 +49,8 @@ AD_Element (column metadata)
         └── AD_Field (window field display)
 ```
 
+> 🔗 **Reference:** See [idempiere-window-tool.md](idempiere-window-tool.md) for field positioning and layout options.
+
 ## Standard INSERT Pattern
 
 All AD table inserts follow this structure:

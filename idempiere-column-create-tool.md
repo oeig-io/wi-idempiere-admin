@@ -254,6 +254,8 @@ curl -s -X POST "${API_URL}/processes/ad_column-sync" \
 
 ### Step 4: Create AD_Field
 
+> 🔗 **Reference:** See [idempiere-window-tool.md](idempiere-window-tool.md) for field positioning and layout options (XPosition, ColumnSpan, SeqNo).
+
 ```sql
 -- Create AD_Field (if not exists)
 INSERT INTO ad_field (
@@ -314,6 +316,8 @@ The callsign (e.g., `ANS`) is the tenant's Value/SearchKey in deploy.properties.
 
 ## Post-Creation
 
-Reset cache: System Admin => Cache Reset
+1. Run ad_column-sync process to create database column (see Step 3 above)
+2. Reset cache: System Admin => Cache Reset
+3. Configure field layout: See [idempiere-window-tool.md](idempiere-window-tool.md)
 
 Tags: #tool #idempiere #application-dictionary #column-create
