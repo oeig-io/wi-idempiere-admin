@@ -32,37 +32,83 @@ The modern field layout system uses three key controls:
 | Field | Purpose | Values |
 |-------|---------|--------|
 | SeqNo | Vertical order (top to bottom) | 10, 20, 30... (must be unique per field) |
-| XPosition | Horizontal start position | 1 = left column, 2 = right column |
-| ColumnSpan | Width in columns | 1 = standard, 2+ = wide |
-
-> ⚠️ **Deprecated:** IsSameLine is legacy and superseded by XPosition/ColumnSpan. Do not use for new layouts.
+| XPosition | Horizontal start position | 1 = column 1, 4 = column 2, 7 = column 3 |
+| ColumnSpan | Width in columns | 1 = compact (booleans), 2 = standard, 5+ = full width |
 
 ### Common Layout Patterns
 
-**Two-Column Layout (fields side-by-side):**
-```sql
--- Left field
-UPDATE ad_field SET seqno = 90, xposition = 1, columnspan = 1 WHERE ad_field_id = 1000102;
+iDempiere uses a **column-based coordinate system** where fields are positioned by grid coordinates. The system supports two and three-column layouts.
 
--- Right field  
-UPDATE ad_field SET seqno = 95, xposition = 2, columnspan = 1 WHERE ad_field_id = 1000096;
+**Column Position Reference:**
+
+| Logical Column | Text Field Position | Boolean Position(s) | Example Windows |
+|---------------|-------------------|--------------------|-----------------|
+| Column 1 | XPosition = 1 | XPosition = 2 | Product, Business Partner |
+| Column 2 | XPosition = 4 | XPosition = 5, 6 | Product, Business Partner |
+| Column 3 | XPosition = 7 | XPosition = 8, 9 | Business Partner |
+
+**Two-Column Layout (fields side-by-side):**
+
+Use Product window (ad_tab_id = 180) as reference.
+
+```sql
+-- Left column text field (UPC)
+UPDATE ad_field SET seqno = 90, xposition = 1, columnspan = 2 WHERE ad_field_id = 1316;
+
+-- Right column text field (SKU)  
+UPDATE ad_field SET seqno = 91, xposition = 4, columnspan = 2 WHERE ad_field_id = 1317;
 ```
 
-Result: Two fields share one line in the detail view.
+Result: Two fields share one line with labels on left and input boxes aligned.
+
+**Three-Column Layout:**
+
+Use Business Partner window (ad_tab_id = 220) as reference.
+
+```sql
+-- Column 1 (Search Key)
+UPDATE ad_field SET seqno = 40, xposition = 1, columnspan = 2 WHERE ad_field_id = 2156;
+
+-- Column 2 (Business Partner Group)
+UPDATE ad_field SET seqno = 50, xposition = 4, columnspan = 2 WHERE ad_field_id = 3955;
+
+-- Column 3 (Logo)
+UPDATE ad_field SET seqno = 30, xposition = 7, columnspan = 2 WHERE ad_field_id = 57533;
+```
 
 **Full-Width Field:**
+
+Wide fields span across all columns (Name, Description, etc.):
+
 ```sql
-UPDATE ad_field SET seqno = 100, xposition = 1, columnspan = 2 WHERE ad_field_id = 3510;
+UPDATE ad_field SET seqno = 80, xposition = 1, columnspan = 5 WHERE ad_field_id = 2145;
 ```
 
-Result: Field spans both columns (useful for Description, notes, etc.).
+**Boolean Field Positioning:**
 
-**Checkbox Field (special case):**
+Booleans have their label on the **right** side and use **ColumnSpan = 1** (compact). Position at XPosition + 1 relative to text field base:
+
+| Adjacent Text Field | Boolean XPosition | Boolean ColumnSpan |
+|--------------------|-------------------|--------------------|
+| XPosition = 1 | **2** | 1 |
+| XPosition = 4 | **5** (first) or **6** (second) | 1 |
+| XPosition = 7 | **8** (first) or **9** (second) | 1 |
+
+Example (Business Partner - Customer/Vendor checkboxes in column 3):
+
 ```sql
-UPDATE ad_field SET seqno = 60, xposition = 2, columnspan = 2 WHERE ad_field_id = <checkbox_field>;
+-- Customer checkbox (first boolean in column 3)
+UPDATE ad_field SET seqno = 60, xposition = 8, columnspan = 1 WHERE ad_field_id = 9614;
+
+-- Vendor checkbox (second boolean in column 3)
+UPDATE ad_field SET seqno = 70, xposition = 9, columnspan = 1 WHERE ad_field_id = 9623;
 ```
 
-Result: Checkbox appears with label properly aligned to the right.
+Result: Checkboxes appear with labels aligned to the right of the control.
+
+**Button Field:**
+
+Like booleans, buttons have no left-hand label (label is inside the button). Use the same positioning pattern as booleans.
 
 ### Grid vs Detail View
 
