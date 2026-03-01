@@ -110,6 +110,47 @@ Result: Checkboxes appear with labels aligned to the right of the control.
 
 Like booleans, buttons have no left-hand label (label is inside the button). Use the same positioning pattern as booleans.
 
+### SeqNo Spacing Strategy
+
+Standard iDempiere uses 10-unit gaps between fields (seqno = 10, 20, 30...). This provides only 9 slots for inserting new fields between existing ones, which quickly becomes limiting during complex layout modifications.
+
+**Best Practice: Multiply by 10**
+
+Before making layout changes on any window, multiply all existing seqnos by 10. This creates 100 slots between each field instead of 10:
+
+```sql
+-- Create spacious numbering (multiply ALL seqnos by 10)
+-- 0 stays 0, 90 becomes 900, 100 becomes 1000, etc.
+UPDATE ad_field SET seqno = seqno * 10 WHERE ad_tab_id = <tab_id>;
+```
+
+**Example transformation:**
+
+| Before | After | Gap Available |
+|--------|-------|---------------|
+| 90 | 900 | 99 slots (901-999) |
+| 100 | 1000 | 99 slots (1001-1099) |
+| 210 | 2100 | 99 slots (2101-2199) |
+
+**Leaving windows in ×10 state:**
+
+It is completely acceptable to leave windows in the multiplied state permanently. iDempiere only cares about relative ordering, not absolute values. The ×10 state:
+- Preserves visual ordering (900 < 910 < 920 maintains hierarchy)
+- Provides room for future field insertions
+- Requires no additional maintenance
+
+**Updated Product window example with spacing:**
+
+```sql
+-- Step 1: Create spacious numbering
+UPDATE ad_field SET seqno = seqno * 10 WHERE ad_tab_id = 180;
+
+-- Step 2: Position fields using spacious values
+UPDATE ad_field SET seqno = 900, xposition = 1, columnspan = 2 WHERE ad_field_id = 1316;  -- UPC
+UPDATE ad_field SET seqno = 910, xposition = 4, columnspan = 2 WHERE ad_field_id = 1317;  -- SKU
+UPDATE ad_field SET seqno = 920, xposition = 1, columnspan = 2 WHERE ad_field_id = 1034;  -- Product Category
+```
+
 ### Grid vs Detail View
 
 | View | Controlled By | Purpose |
