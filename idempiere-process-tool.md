@@ -71,6 +71,27 @@ INSERT INTO ad_process (
 );
 ```
 
+## Process Deployment Options
+
+After creating the process, choose how users will access it:
+
+| Deployment | Use When | Table(s) |
+|------------|----------|----------|
+| **Button** | Record-specific action (e.g., "Create PO from this SO") | AD_Column + AD_Field |
+| **Info Window** | Multi-record selection with context | AD_InfoProcess |
+| **Menu** | Standalone batch operation, no window context needed | AD_Menu + AD_TreeNodeMM |
+
+### Decision Framework
+
+| Choose Button when... | Choose Info Window when... | Choose Menu when... |
+|----------------------|---------------------------|---------------------|
+| User works in specific window | Need to select multiple records | Batch/administrative function |
+| Current record provides context | Complex filtering/selection needed | No natural window context exists |
+| Workflow-integrated action | Action applies to multiple items | All parameters entered at runtime |
+| Single-record operation | Requires record selection UI | Self-contained business process |
+
+> 🔗 **Reference**: See [idempiere-menu-tool.md](idempiere-menu-tool.md) for menu creation patterns.
+
 ## Linking to Info Window
 
 AD_InfoProcess creates a button in an Info Window that runs the process.
