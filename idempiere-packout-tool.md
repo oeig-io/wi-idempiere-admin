@@ -25,6 +25,7 @@ PackOut produces portable XML packages that can be imported into other environme
 - [SQL Quote Escaping](#sql-quote-escaping)
 - [Running PackOut via REST API](#running-packout-via-rest-api)
 - [Deploy Integration](#deploy-integration)
+- [Post-Deployment: Role-Window Access](#post-deployment-role-window-access)
 - [Common Table IDs](#common-table-ids)
 
 ## Workflow
@@ -273,6 +274,43 @@ Example: `20260204000000_SYSTEM_slab_label_print_format.zip`
 
 The deploy.sh script batches consecutive zip files and imports them via `RUN_ApplyPackInFromFolder.sh`.
 
+## Post-Deployment: Role-Window Access
+
+After deploying a window via PackOut, you must grant role access so users can see and use the window. PackOut does **not** automatically create role-window access records.
+
+**Table:** AD_Window_Access (ID 201)
+
+**Key Columns:**
+- `ad_window_id` - The window being accessed
+- `ad_role_id` - The role receiving access
+- `ad_client_id` - Must match the role's client
+- `isreadwrite` - 'Y' for full access, 'N' for read-only
+
+**Quick Reference SQL:**
+```sql
+-- Grant window access to multiple roles
+INSERT INTO ad_window_access (
+    ad_window_id, ad_role_id, ad_client_id, ad_org_id, isactive,
+    isreadwrite, created, createdby, updated, updatedby, ad_window_access_uu
+) VALUES 
+-- Example: Grant Vendor window access to Purchasing roles
+(1000011, 1000011, 1000000, 0, 'Y', 'Y', now(), 100, now(), 100, gen_random_uuid()), -- Purchasing Admin
+(1000011, 1000010, 1000000, 0, 'Y', 'Y', now(), 100, now(), 100, gen_random_uuid()), -- Purchasing User
+(1000011, 1000009, 1000000, 0, 'Y', 'Y', now(), 100, now(), 100, gen_random_uuid()), -- Accounting Admin
+(1000011, 1000008, 1000000, 0, 'Y', 'Y', now(), 100, now(), 100, gen_random_uuid())  -- Accounting User
+ON CONFLICT (ad_window_id, ad_role_id) DO UPDATE SET
+    isactive = 'Y',
+    isreadwrite = 'Y',
+    updated = now(),
+    updatedby = 100;
+```
+
+**Notes:**
+- The primary key is composite: `(ad_window_id, ad_role_id)`
+- Use `ON CONFLICT` for idempotent inserts
+- Always match `ad_client_id` to the role's client (not the window's client)
+- System windows (client 0) can be accessed by tenant roles
+
 ## Common Table IDs
 
 | AD_Table_ID | TableName | Notes |
@@ -281,6 +319,7 @@ The deploy.sh script batches consecutive zip files and imports them via `RUN_App
 | 106 | AD_Tab | Child records of window |
 | 107 | AD_Field | Child records of tab |
 | 116 | **AD_Menu** | **Use for windows with menu entries - includes window automatically** |
+| **201** | **AD_Window_Access** | **Role-window access grants (see Post-Deployment section)** |
 | 489 | AD_PrintFormatItem | |
 | 492 | AD_PrintPaper | |
 | 493 | AD_PrintFormat | |
