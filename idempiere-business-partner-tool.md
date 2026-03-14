@@ -15,6 +15,8 @@ The purpose of this tool is to define how ACME creates and manages business part
 
 This is important because proper BP setup ensures correct accounting, access control, and financial engagement tracking across all organizations.
 
+This document references the iDempiere REST API. See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage.
+
 ## TOC
 
 - [Core Principles](#core-principles)

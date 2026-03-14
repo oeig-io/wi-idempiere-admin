@@ -15,6 +15,8 @@ The purpose of this document is to explain how C_ValidCombination records work i
 
 This is important because charges, products, business partners, and other entities cannot post directly to GL accounts. Instead, they post through valid combinations that include the GL account plus optional dimensional tracking (organization, product, project, business partner, etc.).
 
+This document references the iDempiere REST API. See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage.
+
 ## What Are Valid Combinations?
 
 A valid combination is a unique pairing of a GL account (C_ElementValue) with zero or more accounting dimensions. Think of it as a fully-qualified accounting destination.

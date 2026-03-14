@@ -11,12 +11,16 @@ metadata:
 
 # iDempiere Column Create Tool
 
-The purpose of this document is to describe how to add columns to existing tables in iDempiere using the REST API.
+The purpose of this document is to describe how to add columns to existing tables in iDempiere.
+
+> **🔗 Reference:** See [idempiere-table-create-tool.md](idempiere-table-create-tool.md) for the complete table creation workflow.
 
 ## Prerequisites
 
 - REST API access via System API Access role
-- See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication pattern
+- See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage
+- This document requires System-Level API access. See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) System-Level Calls section for details
+- AD_Elements must be created before AD_Columns (see Step 1 below)
 
 ## Quick Reference
 
@@ -78,6 +82,89 @@ Common reference keys:
 | 276 | AD_Org (all) | Any organization |
 | 130 | AD_Org (Trx) | Transaction orgs only |
 | 138 | C_BPartner (Trx) | Business partners |
+
+## Data Type Best Practices
+
+The AD_Reference_ID field in AD_Column determines how data is stored and displayed. Choose reference types based on iDempiere conventions, not just the underlying PostgreSQL type.
+
+### Standard Numeric Types
+
+| Reference ID | Name | AD_Reference_ID Value | Use For |
+|-------------|------|---------------------|---------|
+| 12 | Amount | 12 | **Default for all monetary and numeric values** - currency amounts, costs, prices, quantities with decimals |
+| 37 | Costs+Prices | 37 | Same as Amount (12), use when specifically tracking costs or prices |
+| 22 | Number | 22 | General decimals with higher precision - scientific/engineering values |
+| 11 | Integer | 11 | Whole numbers only - counters, sequence numbers, IDs |
+| 29 | Quantity | 29 | Physical quantities (weight, volume, count with decimals) |
+
+**Default Rule:** Unless specified otherwise, use Reference ID 12 (Amount) for all numeric columns.
+
+**Database Storage:**
+All numeric types are stored in PostgreSQL as unbounded `NUMERIC` (no precision or scale limits). The AD_Reference_ID and FieldLength values control iDempiere's display formatting, not database constraints.
+
+**AD_Column FieldLength for Numeric Types:**
+- Set FieldLength = 22 for all numeric reference types (12, 22, 29, 37)
+- This controls display precision in iDempiere, not database storage
+- The database stores full precision without limits
+
+**Why not Integer or plain Number?**
+- Integer (11) cannot store decimal values - inappropriate for costs, prices, percentages
+- Number (22) stores 10 decimal places which is excessive for business currency and causes display issues
+- Amount (12) is the iDempiere standard for all business numeric values
+
+### JSON and JSONB Storage
+
+| Reference ID | Name | AD_Reference_ID Value | PostgreSQL Type | Use For |
+|-------------|------|---------------------|-----------------|---------|
+| 200267 | JSON | 200267 | JSONB | Configuration data, adapter settings, flexible structured data |
+
+**When to use JSON:**
+- Configuration that doesn't need reporting or foreign key constraints
+- Adapter settings (like OpenCode CLI parameters)
+- Dynamic or evolving data structures
+- Data that doesn't require iDempiere validation rules
+
+**When NOT to use JSON:**
+- Data that needs foreign key relationships
+- Fields that will be used in WHERE clauses for reporting
+- Values that need iDempiere's standard validation (mandatory, range checks)
+- Amounts, dates, or standard business data
+
+**Important:** AD_Column stores JSON data as text. The ad_column-sync process maps reference 200267 to PostgreSQL's native JSONB type which provides:
+- Binary storage (more efficient than JSON text)
+- GIN index support for queries
+- JSON operators and functions
+
+**Example JSON column:**
+```sql
+INSERT INTO ad_column (
+    ad_column_id, ad_table_id, columnname, name,
+    ad_reference_id,  -- Set to 200267 for JSON
+    fieldlength,      -- Use 2000 for TEXT storage of JSON
+    ...
+)
+SELECT nextval('ad_column_sq'), v_table_id, 'OEIG_Adapter_Config', 'Adapter Config',
+    200267,  -- JSON reference type
+    2000,    -- Length for TEXT
+    ...
+```
+
+### PostgreSQL Type Mapping
+
+AD_Reference_ID determines the PostgreSQL column type created by ad_column-sync:
+
+| AD_Reference_ID | PostgreSQL Type | iDempiere Display | Storage |
+|----------------|-----------------|-------------------|---------|
+| 10 (String) | VARCHAR(n) | FieldLength determines max length | Variable |
+| 11 (Integer) | NUMERIC | No decimals | Unbounded |
+| 12 (Amount) | NUMERIC | FieldLength=22, 2 decimal places shown | Unbounded |
+| 14 (Text) | TEXT | Unlimited | Variable unlimited |
+| 20 (Yes-No) | CHAR(1) | Y/N | Single character |
+| 22 (Number) | NUMERIC | FieldLength=22, 10 decimal places shown | Unbounded |
+| 29 (Quantity) | NUMERIC | FieldLength=22, 2 decimal places shown | Unbounded |
+| 200267 (JSON) | JSONB | Parsed JSON | Binary JSON |
+
+**Important:** PostgreSQL NUMERIC columns have no precision or scale limits. All numeric data is stored with full precision. The AD_Reference_ID and FieldLength only affect how iDempiere displays the values.
 
 ## Procedure
 
@@ -329,10 +416,16 @@ Custom columns must use the client callsign prefix from `deploy.properties`.
 
 | Item | Convention | Example |
 |------|------------|---------|
-| Custom column | `{Callsign}_DescriptiveName_ID` | `ACME_Org_Location_ID` |
-| Standard column | Use existing element | `M_Product_ID` |
+| Custom column | Callsign_DescriptiveName_ID | ACME_Org_Location_ID |
+| Standard column | Use existing element | M_Product_ID |
+| Boolean column | IsCallsignXxx pattern | IsOEIGTemplate, IsOEIGRequired |
 
-The callsign (e.g., `ACME`) is the tenant's Value/SearchKey in deploy.properties.
+The callsign (e.g., ACME or OEIG) is the tenant's Value/SearchKey in deploy.properties.
+
+Boolean Column Rules:
+- Always use IsCallsignXxx pattern (Is + Callsign + Name)
+- Must be IsMandatory: true with DefaultValue: 'N'
+- Field layout: xposition = 2, columnspan = 2 for proper checkbox display
 
 ## Post-Creation
 

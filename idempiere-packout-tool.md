@@ -15,6 +15,8 @@ The purpose of this document is to provide the workflow and reference for creati
 
 PackOut produces portable XML packages that can be imported into other environments, avoiding manual SQL scripts for dictionary-level artifacts.
 
+This document references the iDempiere REST API. See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage.
+
 ## TOC
 
 - [Workflow](#workflow)
