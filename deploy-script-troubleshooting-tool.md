@@ -110,3 +110,32 @@ BEGIN
     ';
 END $script$;
 ```
+
+## Groovy String Interpolation and Dollar Signs
+
+**Symptom:** PostgreSQL parse errors when using Groovy string interpolation (`$variable`) inside SQL-embedded scripts.
+
+```
+ERROR:  syntax error at or near "$"
+LINE 42:            "Cost: $" + costUsd + nl +
+```
+
+**Cause:** PostgreSQL interprets `$variable` as dollar quoting, conflicting with Groovy's string interpolation syntax.
+
+**Fix - Avoid `$` entirely in embedded Groovy:**
+```groovy
+// WRONG - triggers PostgreSQL dollar quoting
+"Cost: $" + costUsd
+
+// CORRECT - use string concatenation without $
+"Cost: USD " + costUsd
+"Cost: " + costUsd + " USD"
+```
+
+**Fix - Use single-quoted strings (no interpolation):**
+```groovy
+// Single quotes = literal string, no $ escaping issues
+'Cost: USD ' + costUsd
+```
+
+**Note:** This applies to Groovy scripts embedded in SQL via `v_script := '...'` or inline in `DO $$` blocks.
