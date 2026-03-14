@@ -228,7 +228,12 @@ COLUMN_ID=$(echo "$RESPONSE" | jq -r '.id')
 
 Creates or alters the database column.
 
+**Behavior:**
+- **Without DateFrom parameter:** Only the specified column ID gets synced
+- **With DateFrom parameter:** Syncs specified column plus any columns updated after that date
+
 ```bash
+# Sync a single column
 curl -s -X POST "${API_URL}/processes/ad_column-sync" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $SESSION_TOKEN" \
@@ -238,7 +243,44 @@ curl -s -X POST "${API_URL}/processes/ad_column-sync" \
     }"
 ```
 
-> **📝 Note** - Leave DateFrom parameter empty to sync all columns for that table.
+> **📝 Note** - When adding multiple columns to an EXISTING table, you must sync each column individually (one API call per column). Use the pattern below to iterate through all new column IDs.
+
+#### Syncing Multiple New Columns
+
+When adding multiple columns to an existing table, iterate through each new column ID:
+
+```bash
+# After creating AD_Columns via SQL, get all new column IDs
+COLUMN_IDS=$(psqli -t -A -c "SELECT ad_column_id FROM ad_column WHERE ad_table_id = ${TABLE_ID} AND issyncdatabase = 'N';")
+
+# Sync each column individually
+for COL_ID in ${COLUMN_IDS}; do
+    echo "Syncing column ID: ${COL_ID}"
+    curl -s -X POST "${API_URL}/processes/ad_column-sync" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $SESSION_TOKEN" \
+        -d "{
+            \"model-name\": \"ad_column\",
+            \"record-id\": ${COL_ID}
+        }"
+done
+```
+
+Alternatively, use the DateFrom parameter with a timestamp slightly before your column creation to batch sync all recent changes:
+
+```bash
+# Set DateFrom to 5 minutes ago to sync all recently updated columns
+DATE_FROM=$(date -d '5 minutes ago' -u +"%Y-%m-%dT%H:%M:%SZ")
+
+curl -s -X POST "${API_URL}/processes/ad_column-sync" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $SESSION_TOKEN" \
+    -d "{
+        \"model-name\": \"ad_column\",
+        \"record-id\": ${COLUMN_ID},
+        \"DateFrom\": \"${DATE_FROM}\"
+    }"
+```
 
 ### Step 4: Create Field
 

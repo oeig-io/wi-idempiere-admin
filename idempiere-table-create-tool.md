@@ -64,9 +64,9 @@ TABLE_ID=$(echo "$RESPONSE" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
 
 ## Step 3: Run CopyColumnsFromTable Process
 
-The CopyColumnsFromTable process copies standard columns from an existing table (like AD_Calendar) to your new table. This provides a complete foundation including primary key, UUID, audit fields (Created, CreatedBy, Updated, UpdatedBy), and standard fields (Value, Name, Description, AD_Client_ID, AD_Org_ID, IsActive).
+The CopyColumnsFromTable process copies standard columns from an existing table (like C_Calendar) to your new table. This provides a complete foundation including primary key, UUID, audit fields (Created, CreatedBy, Updated, UpdatedBy), and standard fields (Value, Name, Description, AD_Client_ID, AD_Org_ID, IsActive).
 
-The AD_Calendar table is the preferred source because it contains the standard column pattern used throughout iDempiere.
+The C_Calendar table is the preferred source because it contains the standard column pattern used throughout iDempiere.
 
 Requirements:
 - Target table must have NO columns (fresh AD_Table record only)
@@ -74,8 +74,8 @@ Requirements:
 - All copied columns inherit the target table's EntityType
 
 ```bash
-# Get source table ID (AD_Calendar)
-SOURCE_TABLE_ID=$(psqli -t -A -c "SELECT ad_table_id FROM ad_table WHERE tablename = 'AD_Calendar';")
+# Get source table ID (C_Calendar)
+SOURCE_TABLE_ID=$(psqli -t -A -c "SELECT ad_table_id FROM ad_table WHERE tablename = 'C_Calendar';")
 
 # Get target table ID (your new table)
 TARGET_TABLE_ID=$(psqli -t -A -c "SELECT ad_table_id FROM ad_table WHERE tablename = '${TABLE_NAME}';")
@@ -101,13 +101,14 @@ See [idempiere-column-create-tool.md](idempiere-column-create-tool.md) for the c
 
 The ad_column-sync process creates the physical database table with proper column types, constraints, and foreign keys. This is the ONLY supported method for creating the physical table - never use manual CREATE TABLE statements.
 
-When you run ad_column-sync with any column ID from the table, iDempiere creates or updates the physical table to match ALL AD_Column records for that table.
+**For NEW tables:** When you run ad_column-sync with any column ID from the table, iDempiere creates the physical table with ALL AD_Column records in one operation.
+
+**For EXISTING tables:** When adding new columns, you must run ad_column-sync for EACH new column individually, or use the DateFrom parameter to batch sync columns updated after a specific time.
 
 ```bash
-# Get any column ID from your table
+# For NEW tables - any column works, creates entire table
 COLUMN_ID=$(psqli -t -A -c "SELECT ad_column_id FROM ad_column WHERE ad_table_id = ${TABLE_ID} LIMIT 1;")
 
-# Run sync process - this creates the physical table with all columns
 curl -s -X POST "${API_URL}/processes/ad_column-sync" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $SESSION_TOKEN" \
@@ -117,9 +118,7 @@ curl -s -X POST "${API_URL}/processes/ad_column-sync" \
     }"
 ```
 
-> **📝 Note** - You can use any column ID from the table. The process syncs ALL columns for that table, not just the one specified.
-
-## Step 6: Create Window, Tab and Field (Optional)
+> **📝 Note** - When creating a NEW table, you can use any column ID from the table. The process creates the entire physical table with all columns. When updating EXISTING tables with new columns, see [idempiere-column-create-tool.md](idempiere-column-create-tool.md) for the proper sync pattern.
 
 Generate the window, tab, and field structure automatically:
 
