@@ -183,50 +183,17 @@ INSERT INTO m_attributeset (
 
 ## Creating Reference Attributes
 
-Reference attributes create dropdowns that pull options from existing iDempiere tables. This uses the ad_reference + ad_ref_table pattern to define the table relationship.
+Reference attributes create dropdowns that pull options from existing iDempiere tables. This uses the Table Validation reference pattern.
 
-### Step 1: Create AD_Reference with Table Validation
+**See [idempiere-column-create-tool.md](idempiere-column-create-tool.md) for the complete Table Validation pattern including:**
+- Creating AD_Reference with validationtype = 'T'
+- Creating AD_Ref_Table (critical: no ad_ref_table_id column!)
+- Linking references to columns
+- Common mistakes to avoid
 
-Create an ad_reference with validationtype = 'T' (Table Validation):
+### Create Attribute with Reference Type
 
-```sql
-INSERT INTO ad_reference (
-    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-    name, validationtype, entitytype, ad_reference_uu
-) VALUES (
-    nextval('ad_reference_sq'), v_client_id, 0, 'Y', now(), 100, now(), 100,
-    'Mat_Type', 'T', 'U', uuid_generate_v4()
-)
-RETURNING ad_reference_id;
-```
-
-- `validationtype = 'T'` - Table Validation tells the system to use ad_ref_table for the dropdown
-
-### Step 2: Create AD_Ref_Table
-
-Link the ad_reference to the actual table:
-
-```sql
-INSERT INTO ad_ref_table (
-    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-    ad_table_id, ad_key, ad_display, whereclause, entitytype, ad_ref_table_uu
-) VALUES (
-    v_reference_id, v_client_id, 0, 'Y', now(), 100, now(), 100,
-    (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type'),
-    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type') AND columnname = 'ANS_Mat_Type_ID'),
-    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ANS_Mat_Type') AND columnname = 'Name'),
-    NULL,
-    'U', uuid_generate_v4()
-);
-```
-
-- `ad_table_id` - The custom table (ANS_Mat_Type)
-- `ad_key` - The primary key column ID
-- `ad_display` - The display name column ID
-
-### Step 3: Create Attribute with Reference Type
-
-Create the attribute pointing to the ad_reference:
+After creating the Table Validation reference above, create the attribute pointing to it:
 
 ```sql
 INSERT INTO m_attribute (

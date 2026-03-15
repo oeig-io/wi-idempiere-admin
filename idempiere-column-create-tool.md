@@ -83,6 +83,76 @@ Common reference keys:
 | 130 | AD_Org (Trx) | Transaction orgs only |
 | 138 | C_BPartner (Trx) | Business partners |
 
+## Table Validation References
+
+**When to Use:**
+- Search/Table references to custom tables (not standard iDempiere tables)
+- Self-referencing foreign keys (parent-child hierarchies)
+- Dynamic dropdowns populated from custom tables
+
+**Architecture:**
+Two tables work together:
+1. **AD_Reference** - Defines validation type = 'T' (Table)
+2. **AD_Ref_Table** - Links to actual table and columns
+
+**Critical Column Structure:**
+Unlike most iDempiere tables, `ad_ref_table` uses `ad_reference_id` as its primary key - there is NO separate `ad_ref_table_id` column!
+
+**Step-by-Step Pattern:**
+
+1. **Create AD_Reference:**
+```sql
+INSERT INTO ad_reference (
+    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby,
+    updated, updatedby, name, validationtype, entitytype, ad_reference_uu
+)
+SELECT nextval('ad_reference_sq'), 0, 0, 'Y', now(), 100, now(), 100,
+    'TableName', 'T', 'U', gen_random_uuid()::varchar
+WHERE NOT EXISTS (SELECT 1 FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T');
+```
+
+2. **Create AD_Ref_Table (CRITICAL: No ID column!):**
+```sql
+INSERT INTO ad_ref_table (
+    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby,
+    updated, updatedby, ad_table_id, ad_key, ad_display,
+    whereclause, orderbyclause, entitytype, ad_ref_table_uu
+)
+SELECT 
+    (SELECT ad_reference_id FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T'),
+    0, 0, 'Y', now(), 100, now(), 100,
+    (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName'),
+    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName') AND iskey = 'Y'),
+    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName') AND columnname = 'Name'),
+    NULL,  -- Optional filter (e.g., 'IsSummary=''Y''')
+    'Value',  -- Order by column
+    'U',
+    gen_random_uuid()::varchar
+WHERE NOT EXISTS (SELECT 1 FROM ad_ref_table WHERE ad_reference_id = (SELECT ad_reference_id FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T'));
+```
+
+3. **Use in AD_Column:**
+```sql
+-- For Search reference type
+ad_reference_id = 30
+ad_reference_value_id = (SELECT ad_reference_id FROM ad_reference WHERE name = 'TableName')
+```
+
+**Common Mistakes:**
+- **DO NOT** include `ad_ref_table_id` column in INSERT - it doesn't exist!
+- **DO NOT** use `nextval('ad_ref_table_sq')` - not needed!
+- Ensure column lookups (ad_key, ad_display) reference columns that actually exist
+- AD_Ref_Table record must exist before column can use the reference
+
+**Verification:**
+```sql
+-- Check reference and table validation setup
+SELECT r.ad_reference_id, r.name, rt.ad_table_id, rt.ad_key, rt.ad_display, rt.whereclause
+FROM ad_reference r
+LEFT JOIN ad_ref_table rt ON r.ad_reference_id = rt.ad_reference_id
+WHERE r.validationtype = 'T' AND r.name = 'TableName';
+```
+
 ## Data Type Best Practices
 
 The AD_Reference_ID field in AD_Column determines how data is stored and displayed. Choose reference types based on iDempiere conventions, not just the underlying PostgreSQL type.
@@ -176,6 +246,13 @@ AD_Reference_ID determines the PostgreSQL column type created by ad_column-sync:
 
 **Use existing element when:**
 - Adding standard iDempiere column (e.g., another `M_Product_ID` reference)
+- Element already exists in the system
+
+| Scenario | Action |
+|----------|--------|
+| Element exists (standard iDempiere) | Use existing - do not create (e.g., AD_Table_ID, Record_ID, M_Product_ID) |
+| Element exists (custom) | Use existing - do not create duplicate |
+| Element does not exist | Create with client callsign prefix |
 
 ```bash
 ELEMENT_ID=$(psqli -t -A -c "SELECT ad_element_id FROM ad_element WHERE columnname = 'AD_Org_Location_ID';")
