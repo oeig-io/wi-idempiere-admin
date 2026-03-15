@@ -33,55 +33,174 @@ The purpose of this document is to describe how to add columns to existing table
 
 ## Reference Types
 
-| ID | Type | Use For | Length |
-|----|------|---------|--------|
-| 10 | String | Text | Varies |
-| 11 | Integer | Whole numbers | 10 |
-| 13 | ID | Primary key | 22 |
-| 19 | Table Direct | FK where column = `TableName_ID` exactly | 10 |
-| 20 | Yes-No | Boolean | 1 |
-| 22 | Number | Decimals | 22 |
-| 29 | Quantity | Quantities | 22 |
-| 30 | Search | FK with popup (any column name) | 10 |
+| ID | Type | Use For | UI Behavior | Length |
+|----|------|---------|-------------|--------|
+| 10 | String | Text | Text field | Varies |
+| 11 | Integer | Whole numbers | Number field | 10 |
+| 13 | ID | Primary key | Hidden/system | 22 |
+| 18 | **Table** | Dropdown - requires reference when convention broken | Dropdown | 10 |
+| 19 | **Table Direct** | Dropdown - uses naming convention `TableName_ID` | Dropdown | 10 |
+| 20 | Yes-No | Boolean | Checkbox | 1 |
+| 22 | Number | Decimals | Number field | 22 |
+| 29 | Quantity | Quantities | Number field | 22 |
+| 30 | **Search** | Popup with filter - for high-volume tables | Popup dialog | 10 |
 
-### Boolean Columns (Yes-No)
+### Foreign Key Reference Types (Table, Table Direct, Search)
 
-> **⚠️ Warning** - Yes-No (boolean) columns must always be `IsMandatory: true` with `DefaultValue: 'N'`. Null boolean states in the database cause system instability and UI issues.
+iDempiere provides three reference types for foreign key relationships. Understanding when to use each is critical for proper UI behavior and performance.
 
-**Naming Convention:** Boolean columns follow iDempiere's standard `IsXxx` pattern without the tenant prefix:
+#### Decision Matrix
 
-| Pattern | Example | Use For |
-|---------|---------|---------|
-| `IsXxx` | `IsANSTemplate` | Custom boolean flags (no tenant prefix) |
-| `IsXxx` | `IsActive`, `IsSummary` | Standard iDempiere booleans |
+| Type | ID | Use When | Requires Reference | UI Behavior |
+|------|-----|----------|-------------------|-------------|
+| **Table Direct** | 19 | Column name follows `TableName_ID` convention exactly | **No** - convention auto-resolves | Dropdown |
+| **Table** | 18 | Dropdown needed but convention is broken | **Yes** - AD_Reference_Value_ID required | Dropdown |
+| **Search** | 30 | High-volume tables (thousands+ records) OR convention broken | Optional - when convention broken | Popup with filter/choose |
 
-**Field Layout:** Checkbox fields require proper layout settings for the label to appear correctly:
+#### Table Direct (19) - Convention-Based
 
+Use when the column name matches the target table name exactly with `_ID` suffix.
+
+**Examples:**
 ```sql
-xposition = 2,    -- Horizontal position
-columnspan = 2    -- Label appears to right of checkbox
+-- M_Product_ID → automatically resolves to M_Product table
+AD_Reference_ID = 19
+AD_Reference_Value_ID = NULL  -- Not needed!
+
+-- C_BPartner_ID → automatically resolves to C_BPartner table  
+AD_Reference_ID = 19
+AD_Reference_Value_ID = NULL  -- Not needed!
+
+-- OEIG_Goal_ID → automatically resolves to OEIG_Goal table
+AD_Reference_ID = 19
+AD_Reference_Value_ID = NULL  -- Not needed!
 ```
 
-### Table Direct vs Search
+**Key Point:** iDempiere strips the `_ID` suffix and looks for a matching table name. No reference value required!
 
-| Reference | When to Use | AD_Reference_Value_ID |
-|-----------|-------------|----------------------|
-| Table Direct (19) | Column name = `TableName_ID` exactly (e.g., `M_Product_ID`) | Not needed |
-| Search (30) | Column name differs from table (e.g., `AD_Org_Location_ID` → AD_Org) | Required |
+#### Table (18) - Reference-Based Dropdown
 
-**Finding Reference Keys:**
+Use when you need a dropdown but the column name breaks convention.
+
+**When to use:**
+- Column name doesn't match table name (e.g., `AD_Org_Location_ID` → AD_Org)
+- Self-referencing foreign keys (parent-child hierarchies)
+- Dynamic dropdowns from custom tables
+
+**Examples:**
+```sql
+-- AD_Org_Location_ID references AD_Org table (name mismatch)
+AD_Reference_ID = 18  -- Table
+AD_Reference_Value_ID = 276  -- Required! Reference to AD_Org table
+
+-- OEIG_Goal_Parent_ID self-reference (needs explicit reference)
+AD_Reference_ID = 18  -- Table
+AD_Reference_Value_ID = 1000006  -- Required! Reference to OEIG_Goal table
+```
+
+**Creating Table References:**
+When using Table (18), you must first create a Table validation reference:
+
+```sql
+-- Step 1: Create AD_Reference (validation type = 'T')
+INSERT INTO ad_reference (
+    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby,
+    updated, updatedby, name, validationtype, entitytype, ad_reference_uu
+)
+SELECT nextval('ad_reference_sq'), 0, 0, 'Y', now(), 100, now(), 100,
+    'TableName', 'T', 'U', gen_random_uuid()::varchar
+WHERE NOT EXISTS (SELECT 1 FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T');
+
+-- Step 2: Create AD_Ref_Table (maps to actual table - NO ID COLUMN!)
+INSERT INTO ad_ref_table (
+    ad_reference_id, ad_client_id, ad_org_id, isactive, created, createdby,
+    updated, updatedby, ad_table_id, ad_key, ad_display,
+    whereclause, orderbyclause, entitytype, ad_ref_table_uu
+)
+SELECT 
+    (SELECT ad_reference_id FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T'),
+    0, 0, 'Y', now(), 100, now(), 100,
+    (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName'),
+    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName') AND iskey = 'Y'),
+    (SELECT ad_column_id FROM ad_column WHERE ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'TableName') AND columnname = 'Name'),
+    NULL,  -- Optional filter (e.g., 'IsSummary=''Y''')
+    'Value',  -- Order by column
+    'U',
+    gen_random_uuid()::varchar
+WHERE NOT EXISTS (SELECT 1 FROM ad_ref_table WHERE ad_reference_id = (SELECT ad_reference_id FROM ad_reference WHERE name = 'TableName' AND validationtype = 'T'));
+```
+
+**Important:** AD_Ref_Table uses `ad_reference_id` as its primary key - there is NO `ad_ref_table_id` column!
+
+#### Search (30) - Popup with Filtering
+
+Use for high-volume tables where users need to search/filter before selecting.
+
+**When to use:**
+- Tables with thousands+ of records (C_BPartner, M_Product on large systems)
+- When users need advanced filtering before selection
+- Convention-broken FKs that also need search capability
+
+**Examples:**
+```sql
+-- C_BPartner_ID on high-volume system (use Search instead of Table Direct)
+AD_Reference_ID = 30  -- Search
+AD_Reference_Value_ID = 138  -- Optional - only if convention broken
+
+-- Product search with filtering capability
+AD_Reference_ID = 30
+AD_Reference_Value_ID = NULL  -- Not needed if column = M_Product_ID
+```
+
+**UI Behavior:**
+- **Table/Table Direct (18/19):** Shows dropdown list immediately
+- **Search (30):** Shows text field with lookup button → opens popup with filter grid
+
+### Common Reference Keys
+
 ```sql
 -- Find validation references for a table
 SELECT ad_reference_id, name FROM ad_reference
 WHERE name ILIKE '%org%' AND validationtype = 'T';
 ```
 
-Common reference keys:
 | ID | Name | Use For |
 |----|------|---------|
 | 276 | AD_Org (all) | Any organization |
 | 130 | AD_Org (Trx) | Transaction orgs only |
 | 138 | C_BPartner (Trx) | Business partners |
+
+### Choosing Between Reference Types
+
+**Quick Decision Guide:**
+
+1. **Does column name match `TableName_ID` exactly?**
+   - Yes → Use **Table Direct (19)**
+   - No → Continue to question 2
+
+2. **Is this a high-volume table (1000+ records)?**
+   - Yes → Use **Search (30)**
+   - No → Use **Table (18)**
+
+3. **Do you need search/filter capability?**
+   - Yes → Use **Search (30)**
+   - No → Use **Table (18)** or **Table Direct (19)**
+
+**Examples:**
+
+```sql
+-- Convention match + low volume = Table Direct
+OEIG_Goal_ID → Table Direct (19), no reference needed
+
+-- Convention broken + low volume = Table
+AD_Org_Location_ID → Table (18), reference to AD_Org required
+
+-- Convention match + high volume = Search (for better UX)
+C_BPartner_ID on Order header → Search (30), no reference needed
+
+-- Convention broken + high volume = Search with reference
+Custom_External_BPartner_ID → Search (30), reference to C_BPartner required
+```
 
 ## Table Validation References
 
