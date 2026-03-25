@@ -15,12 +15,15 @@ The purpose of this document is to describe how to add columns to existing table
 
 > **🔗 Reference:** See [idempiere-table-create-tool.md](idempiere-table-create-tool.md) for the complete table creation workflow.
 
+## API Requirement
+
+- Read: [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage
+- Know: that you must use API system access (not tenant)
+
 ## Prerequisites
 
-- REST API access via System API Access role
-- See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) for authentication patterns and API usage
-- This document requires System-Level API access. See [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) System-Level Calls section for details
-- AD_Elements must be created before AD_Columns (see Step 1 below)
+- Always: check for existing AD_Elements before you begin scripting
+- AD_Element records must be created before AD_Column records (see Step 1 below)
 
 ## Quick Reference
 
@@ -502,6 +505,8 @@ curl -s -X POST "${API_URL}/models/ad_field" \
 ```
 
 ## SQL Alternative
+
+NOTE: This section is a last resort! This section should only be used when the API is not available. The reason the API is preferred is that idempiere handles all the underlying database column creation details (column type, constraints, foreign keys, etc...). Doing so ensures iDempiere's AD_Column records are always in sync with the underlying columns.
 
 The purpose of this section is to provide SQL for creating columns in deploy scripts where REST API is not available.
 
