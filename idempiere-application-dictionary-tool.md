@@ -138,7 +138,7 @@ INSERT INTO ad_field (
     ad_field_id, ad_client_id, ad_org_id, isactive, created, createdby,
     updated, updatedby, name, description, help, ad_tab_id, ad_column_id,
     isdisplayed, displaylogic, displaylength, isreadonly, seqno, sortno,
-    issameline, isheading, isfieldonly, isencrypted, entitytype, ad_field_uu,
+    isheading, isfieldonly, isencrypted, entitytype, ad_field_uu,
     iscentrallymaintained, isdefaultfocus, numlines, columnspan, xposition
 ) VALUES (
     nextval('ad_field_sq'), 0, 0, 'Y', now(), 100, now(), 100,
@@ -146,7 +146,7 @@ INSERT INTO ad_field (
     186,  -- ad_tab_id
     (SELECT ad_column_id FROM ad_column WHERE columnname = 'ANS_ButtonName' AND ad_table_id = 259),
     'Y', '@IsSOTrx@=Y & @Processed@=Y',  -- displaylogic optional
-    1, 'N', 590, 0, 'N', 'N', 'N', 'N', 'U', uuid_generate_v4()::varchar,
+    1, 'N', 590, 0, 'N', 'N', 'N', 'U', uuid_generate_v4()::varchar,
     'Y', 'N', 0, 2, 2
 );
 ```

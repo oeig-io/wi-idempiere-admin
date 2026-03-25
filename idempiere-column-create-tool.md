@@ -595,7 +595,7 @@ Use SQL INSERT for precise control over individual field properties:
 INSERT INTO ad_field (
     ad_field_id, ad_client_id, ad_org_id, isactive, created, createdby,
     updated, updatedby, name, description, ad_tab_id, ad_column_id,
-    isdisplayed, displaylength, isreadonly, seqno, issameline, isheading,
+    isdisplayed, displaylength, isreadonly, seqno, isheading,
     isfieldonly, isencrypted, entitytype, ad_field_uu, iscentrallymaintained,
     isdefaultfocus, columnspan
 )
@@ -608,7 +608,7 @@ SELECT nextval('ad_field_sq'), 0, 0, 'Y', now(), 100, now(), 100,
     (SELECT ad_column_id FROM ad_column
      WHERE columnname = 'ACME_Mat_Category_ID'
        AND ad_table_id = (SELECT ad_table_id FROM ad_table WHERE tablename = 'ACME_Mat_Type')),
-    'Y', 10, 'N', 60, 'N', 'N', 'N', 'N', 'U',
+    'Y', 10, 'N', 60, 'N', 'N', 'N', 'U',
     uuid_generate_v4()::varchar, 'Y', 'N', 2
 WHERE NOT EXISTS (
     SELECT 1 FROM ad_field f
@@ -668,7 +668,8 @@ The callsign (e.g., ACME or OEIG) is the tenant's Value/SearchKey in deploy.prop
 Boolean Column Rules:
 - Always use IsCallsignXxx pattern (Is + Callsign + Name)
 - Must be IsMandatory: true with DefaultValue: 'N'
-- Field layout: xposition = 2, columnspan = 2 for proper checkbox display
+- Field layout: xposition = 2, columnspan = 1 for proper checkbox display
+- Always set SeqNoGrid to match or follow SeqNo for grid view column order
 
 ## Post-Creation
 

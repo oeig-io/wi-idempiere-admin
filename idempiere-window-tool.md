@@ -106,6 +106,10 @@ UPDATE ad_field SET seqno = 70, xposition = 9, columnspan = 1 WHERE ad_field_id 
 
 Result: Checkboxes appear with labels aligned to the right of the control.
 
+> **Important:** Always set SeqNoGrid when updating field positions. Omitting it leaves the grid column order undefined.
+
+> **Never use:** `IsSameLine` - not processed by iDempiere web UI, use xposition offset instead.
+
 **Button Field:**
 
 Like booleans, buttons have no left-hand label (label is inside the button). Use the same positioning pattern as booleans.
