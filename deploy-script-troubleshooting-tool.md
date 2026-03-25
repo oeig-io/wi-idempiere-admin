@@ -139,3 +139,40 @@ LINE 42:            "Cost: $" + costUsd + nl +
 ```
 
 **Note:** This applies to Groovy scripts embedded in SQL via `v_script := '...'` or inline in `DO $$` blocks.
+
+## Groovy Comments with Special Characters
+
+**Symptom:** Similar to unescaped quotes - "zero-length delimited identifier" errors or strange truncation notices when deploying Groovy scripts.
+
+**Cause:** Groovy comments (lines starting with `//` or `--`) containing special characters break the SQL string literal when embedded in the `v_script := '...'` format or when using inline Groovy in `DO $$ ... END $$` blocks.
+
+**Problematic characters in comments:**
+- Apostrophes (`'`, `''`)
+- Double quotes (`"`)
+- Dollar signs (`$`)
+- Backticks (`` ` ``)
+- Any character that has special meaning in SQL or PostgreSQL dollar quoting
+
+**Example - WRONG:**
+```sql
+-- In Groovy script (inline in DO $$ block)
+def sql = """
+    -- ASI owner lookup: storageonhand -> locator -> warehouse -> org -> org's linked BP
+    LEFT JOIN ...
+"""
+```
+
+**Quick Fix - Delete ALL Comments:**
+When encountering deployment issues with Groovy scripts, the **first troubleshooting step** should be to remove **all** comments from the embedded Groovy code. Comments are not required for the script to function.
+
+```bash
+# Remove // comments from embedded Groovy in a deploy script
+sed -i '/^\s*\/\//d' deploy/your_script.sql
+
+# Also remove -- comments if present
+sed -i '/^\s*--/d' deploy/your_script.sql
+```
+
+**Prevention:** When writing Groovy scripts for iDempiere deploy scripts:
+1. **Avoid comments entirely** - simplest solution
+2. If comments are needed, ensure all special characters are properly escaped (complex and error-prone)
