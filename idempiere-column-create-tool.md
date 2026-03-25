@@ -275,6 +275,54 @@ LEFT JOIN ad_ref_table rt ON r.ad_reference_id = rt.ad_reference_id
 WHERE r.validationtype = 'T' AND r.name = 'TableName';
 ```
 
+## Dynamic Validation (AD_Val_Rule)
+
+Create SQL-based validation rules that filter dropdown options based on context.
+
+### Creating a Validation Rule
+
+```sql
+INSERT INTO ad_val_rule (
+    ad_val_rule_id, ad_client_id, ad_org_id, isactive, created, createdby,
+    updated, updatedby, name, description, type, code, entitytype, ad_val_rule_uu
+)
+SELECT nextval('ad_val_rule_sq'), 0, 0, 'Y', now(), 100, now(), 100,
+    'Rule Name',
+    'Description',
+    'S',  -- SQL type
+    'ColumnName=@ColumnName@',
+    'U',
+    gen_random_uuid()::varchar
+WHERE NOT EXISTS (SELECT 1 FROM ad_val_rule WHERE name = 'Rule Name');
+```
+
+### Using Context Variables
+
+Reference parent window fields with `@ColumnName@`:
+```sql
+M_Product_ID=@M_Product_ID@
+C_Project.C_Project_ID=@C_Project_ID@
+```
+
+### Handling NULL Context Variables
+
+**CRITICAL:** When the context variable can be NULL/empty, use COALESCE:
+```sql
+COALESCE(@ANS_AttributeSetInstance_ID@,0)=0 OR M_Warehouse.M_Warehouse_ID IN (...)
+```
+
+This prevents "invalid input syntax for type integer" errors when comparing numeric IDs to empty strings.
+
+### Finding Examples
+
+Query existing validation rules:
+```sql
+SELECT name, code 
+FROM ad_val_rule 
+WHERE type = 'S' 
+  AND code LIKE '%@%';
+```
+
 ## Data Type Best Practices
 
 The AD_Reference_ID field in AD_Column determines how data is stored and displayed. Choose reference types based on iDempiere conventions, not just the underlying PostgreSQL type.
