@@ -99,17 +99,21 @@ def result = "" + someGroovyVar
 
 **Cause:** PostgreSQL's dollar quoting uses `$$` as delimiters. If your embedded script contains `$$`, it conflicts.
 
-**Fix:** Use a tagged dollar quote:
+**Important:** Do NOT use tagged dollar quotes (e.g., `DO $script$`) in deploy scripts. The deploy.sh runs files through `envsubst` which replaces `$tag` with empty string, breaking tagged quotes.
+
+**Fix:** Use standard `DO $$` (without a tag):
 ```sql
-DO $script$
+DO $$
 DECLARE
     v_script TEXT;
 BEGIN
     v_script := '
     // Script content that might contain $$
     ';
-END $script$;
+END $$;
 ```
+
+Note: Tagged quotes are only needed if the Groovy script itself contains `$$`. If the embedded Groovy does contain `$$`, you must escape them in the SQL string literal.
 
 ## Groovy String Interpolation and Dollar Signs
 

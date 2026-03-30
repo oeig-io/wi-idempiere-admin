@@ -265,6 +265,7 @@ tail -f /opt/idempiere-server/log/idempiere.*.log | grep -i callout
 
 - [idempiere-model-validator-tool.md](idempiere-model-validator-tool.md) - Groovy model validators (eventtype = T)
 - [idempiere-process-tool.md](idempiere-process-tool.md) - Groovy processes (eventtype = P)
+- [deploy-script-troubleshooting-tool.md](deploy-script-troubleshooting-tool.md) - Groovy deployment issues (quotes, dollar signs, comments)
 - [Script Callout - iDempiere Wiki](https://wiki.idempiere.org/en/Script_Callout)
 
 Tags: #tool #idempiere #callout #groovy
