@@ -1,4 +1,5 @@
 ---
+name: idempiere-build
 type: tool
 purpose: document how to build iDempiere from source
 created: 2026-03-25
