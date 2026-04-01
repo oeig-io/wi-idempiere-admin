@@ -725,4 +725,113 @@ Boolean Column Rules:
 2. Reset cache: System Admin => Cache Reset
 3. Configure field layout: See [idempiere-window-tool.md](idempiere-window-tool.md)
 
+## Column SQL (Virtual Columns)
+
+The purpose of this section is to describe Column SQL, which creates virtual computed columns in iDempiere.
+
+This is important because virtual columns allow you to display calculated values without storing them in the database, reducing storage and ensuring the value is always current.
+
+### Overview
+
+Column SQL is stored in the `ColumnSQL` field of `AD_Column`. It defines a SQL expression that iDempiere evaluates when querying data. Unlike physical columns, virtual columns do not require database synchronization since no database column is created.
+
+> **📝 Note** - Virtual columns are always read-only in the UI. Users cannot edit computed values.
+
+### Column SQL Types
+
+iDempiere supports three types of virtual columns based on the prefix used:
+
+| Type | Prefix | SQL Included | Use Case |
+|------|--------|--------------|----------|
+| Virtual DB | None | Yes - in SELECT query | Computed from database |
+| Virtual UI | `@SQL=` | No - replaced with NULL | Lazy loaded in UI only |
+| Virtual Search | `@SQLFIND=` | No - replaced with NULL | Search/lookup scenarios |
+
+### Virtual DB Column (Plain SQL)
+
+Use when you want the computed value included in database queries.
+
+```sql
+-- Example: Concatenated display value
+'(COALESCE(Name, '') || '' - '' || COALESCE(Value, ''))'
+```
+
+**Behavior:**
+- SQL is included in SELECT queries
+- Requires existing database column for the base table
+- Can reference other columns in the same table
+
+### Virtual UI Column (@SQL=)
+
+Use when you want the value computed only in the UI, not in database queries. The `@SQL=` prefix indicates lazy loading - the SQL is NOT executed at the database level.
+
+```sql
+-- Example: Dynamic status based on conditions
+'@SQL= CASE WHEN IsActive=''Y'' THEN ''Active'' ELSE ''Inactive'' END'
+```
+
+**Behavior:**
+- Database query returns `NULL` for this column
+- SQL is parsed and executed only when displaying the field in the UI
+- Ideal for values that don't need to be queried or filtered
+
+**Key insight from iDempiere source (POInfo.java):**
+```java
+if (ColumnSQL.startsWith("@SQL=") || ColumnSQL.startsWith("@SQLFIND="))
+    return "NULL AS " + ColumnName;  // Not included in SQL!
+```
+
+### Virtual Search Column (@SQLFIND=)
+
+Use for search/lookup virtual columns that need special handling in search dialogs.
+
+```sql
+'@SQLFIND= (SELECT name FROM ad_ref_list WHERE ad_reference_id = @AD_Reference_ID@ AND value = ColumnName)'
+```
+
+**Behavior:**
+- Similar to @SQL= (not included in SQL queries)
+- Used for search/filter scenarios in lookup dialogs
+
+### Creating a Virtual Column
+
+Use the SQL patterns from [SQL Alternative](#sql-alternative) section with these modifications:
+
+1. **AD_Element**: Same pattern - create element for the virtual column name
+2. **AD_Column**: Add `ColumnSQL` field with your virtual SQL expression (e.g., `'@SQL=...'` or plain SQL)
+3. **AD_Field**: Same pattern - create field to display the virtual column
+4. **Skip ad_column-sync**: Virtual columns don't require database synchronization
+
+### Important Constraints
+
+1. **Always read-only**: Virtual columns cannot be edited by users
+2. **No foreign key**: Cannot reference other tables via FK constraints
+3. **No database sync**: Set `IsSyncDatabase = 'Y'` - the sync process skips columns with ColumnSQL
+4. **Context variables**: Use `@ContextVariable@` syntax for runtime values
+5. **Performance**: Complex SQL in @SQL= columns executes for every row display - keep expressions simple
+
+### Context Variables
+
+> **⚠️ Warning** - Context variables in @SQL= columns are evaluated at display time. For @SQL= (Virtual UI), the SQL is only executed when the field is rendered in the UI, not when the record is saved.
+
+See [Dynamic Validation (AD_Val_Rule)](#dynamic-validation-ad_val_rule) for context variable syntax and handling NULL values.
+
+### Verification
+
+Check if a column is virtual:
+
+```sql
+SELECT columnname, columnsql, 
+    CASE 
+        WHEN columnsql LIKE '@SQL=%' THEN 'Virtual UI'
+        WHEN columnsql LIKE '@SQLFIND=%' THEN 'Virtual Search'
+        WHEN columnsql IS NOT NULL AND columnsql <> '' THEN 'Virtual DB'
+        ELSE 'Physical'
+    END as column_type
+FROM ad_column
+WHERE columnname = 'ACME_Computed_Total';
+```
+
+> **📝 Note** - Virtual columns do not require running the ad_column-sync process since no database column is created.
+
 Tags: #tool #idempiere #application-dictionary #column-create
