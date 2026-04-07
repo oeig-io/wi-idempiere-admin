@@ -16,6 +16,7 @@ Work instructions for planning and executing iDempiere changes.
 ### Tools
 
 - [idempiere-application-dictionary-tool.md](idempiere-application-dictionary-tool.md) - AD foundations: standard patterns, button columns, reference types
+  - [idempiere-pre-minted-uuid-tool.md](idempiere-pre-minted-uuid-tool.md) - pre-mint UUIDs for stable cross-script entity references
   - [idempiere-table-create-tool.md](idempiere-table-create-tool.md) - creating new tables via UI
   - [idempiere-column-create-tool.md](idempiere-column-create-tool.md) - adding columns to existing tables (UI and SQL)
   - [idempiere-callout-tool.md](idempiere-callout-tool.md) - Groovy callouts (AD_Rule, AD_Column.Callout) - UI field change events

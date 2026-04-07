@@ -64,9 +64,11 @@ INSERT INTO ad_tablename (
     created, createdby,       -- now(), 100
     updated, updatedby,       -- now(), 100
     -- table-specific columns
-    ad_tablename_uu           -- uuid_generate_v4()::varchar
+    ad_tablename_uu           -- uuid_generate_v4()::varchar or pre-minted
 ) VALUES (...);
 ```
+
+> 🔗 **Reference:** When an entity will be referenced by other scripts, use a pre-minted UUID instead of `uuid_generate_v4()`. See [idempiere-pre-minted-uuid-tool.md](idempiere-pre-minted-uuid-tool.md).
 
 ## Role Access Pattern
 
