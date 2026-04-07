@@ -39,7 +39,7 @@ Review Groovy scripts in container id-44 by querying AD_Rule table for resource 
 
 | Target | Location | Method |
 |--------|----------|--------|
-| Deploy scripts | `idempiere-golive-deploy/deploy/*.sql` | Read embedded Groovy in SQL files |
+| Deploy scripts | `idempiere-golive-deploy/deploy/*.sh` and `*.sql` | Read embedded Groovy in deploy files |
 | Container rules | Container `id-xx` | Query `AD_Rule` table via `psqli` |
 
 **Query deployed Groovy scripts:**

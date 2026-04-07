@@ -15,6 +15,8 @@ The purpose of this document is to provide patterns for creating Groovy callouts
 
 Callouts fire immediately when a user changes a field value in the UI, providing instant feedback before the record is saved. This makes them ideal for UI convenience features like auto-populating related fields.
 
+> 🔗 **Deployment:** All Groovy deploy scripts must use the `.sh` + temp file pattern. See [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) for the standard deployment approach.
+
 ## When to Use Callouts
 
 Use callouts when:
@@ -265,7 +267,7 @@ tail -f /opt/idempiere-server/log/idempiere.*.log | grep -i callout
 
 - [idempiere-model-validator-tool.md](idempiere-model-validator-tool.md) - Groovy model validators (eventtype = T)
 - [idempiere-process-tool.md](idempiere-process-tool.md) - Groovy processes (eventtype = P)
-- [deploy-script-troubleshooting-tool.md](deploy-script-troubleshooting-tool.md) - Groovy deployment issues (quotes, dollar signs, comments)
+- [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) - Standard pattern for deploying Groovy to AD_Rule
 - [Script Callout - iDempiere Wiki](https://wiki.idempiere.org/en/Script_Callout)
 
 Tags: #tool #idempiere #callout #groovy

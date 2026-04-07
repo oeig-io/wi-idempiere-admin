@@ -18,7 +18,7 @@ The purpose of this document is to provide foundational patterns for configuring
 ### Process
 
 ```
-AD_Rule (Groovy script)
+AD_Rule (Groovy script) → See [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md)
     └── AD_Process (process definition)
         └── AD_Process_Para (parameters)
         └── AD_Process_Access (role permissions)
@@ -207,6 +207,8 @@ After AD table changes, reset the application cache:
 
 ## Reference
 
-Working example: `idempiere-golive-deploy/deploy/20260121000000_so_to_po_create_process.sql`
+Working examples:
+- Groovy process: `idempiere-golive-deploy/deploy/20260406214100_mr_line_lot_create_v2.sh`
+- SQL-only: `idempiere-golive-deploy/deploy/20260121000000_so_to_po_create_process.sql`
 
 Tags: #tool #idempiere #application-dictionary

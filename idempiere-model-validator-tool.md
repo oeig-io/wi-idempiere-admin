@@ -15,6 +15,8 @@ The purpose of this document is to provide patterns for creating Groovy model va
 
 Model validators fire on table events (insert, update, delete) regardless of how the record is created (UI, REST API, import, or programmatic). This makes them essential for business logic that must always execute.
 
+> 🔗 **Deployment:** All Groovy deploy scripts must use the `.sh` + temp file pattern. See [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) for the standard deployment approach.
+
 ## When to Use Model Validators
 
 Use model validators instead of callouts when:
@@ -237,6 +239,7 @@ ORDER BY created DESC LIMIT 10;
 
 - [idempiere-callout-tool.md](idempiere-callout-tool.md) - Groovy callouts (eventtype = C, UI only)
 - [idempiere-process-tool.md](idempiere-process-tool.md) - Groovy processes (eventtype = P)
+- [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) - Standard pattern for deploying Groovy to AD_Rule
 - [idempiere-application-dictionary-tool.md](idempiere-application-dictionary-tool.md) - SQL patterns
 
 Tags: #tool #idempiere #model-validator #groovy

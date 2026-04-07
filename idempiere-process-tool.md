@@ -15,6 +15,8 @@ The purpose of this document is to provide patterns for creating Groovy processe
 
 For standard INSERT patterns and role access grants, see [idempiere-application-dictionary-tool.md](idempiere-application-dictionary-tool.md).
 
+> 🔗 **Deployment:** All Groovy deploy scripts must use the `.sh` + temp file pattern. See [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) for the standard deployment approach.
+
 ## AD_Rule
 
 Stores the Groovy script.
@@ -139,5 +141,10 @@ Available via ProcessUtil.java:
 |------|------------|---------|
 | AD_Rule.value | `groovy:ScriptName` | `groovy:SOToPOCreate` |
 | AD_Process.classname | `@script:groovy:ScriptName` | `@script:groovy:SOToPOCreate` |
+
+## Related Documentation
+
+- [idempiere-groovy-deploy-pattern-tool.md](idempiere-groovy-deploy-pattern-tool.md) - Standard pattern for deploying Groovy to AD_Rule
+- [idempiere-application-dictionary-tool.md](idempiere-application-dictionary-tool.md) - SQL patterns and role access
 
 Tags: #tool #idempiere #process #groovy
