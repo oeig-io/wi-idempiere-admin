@@ -77,7 +77,7 @@ BEGIN
         'Description',
         'P', 'S',
         '$GROOVY_SCRIPT',
-        'U', uuid_generate_v4()::varchar, '3'
+        'U', uuid_generate_v4(), '3'
     );
 END \$\$;
 SQLEOF
@@ -161,7 +161,7 @@ BEGIN
     ) VALUES (
         v_rule_id, 0, 0, 'Y', now(), 100, now(), 100,
         'groovy:MyProcess', 'My Process', 'Description',
-        'P', 'S', '$GROOVY_SCRIPT', 'U', uuid_generate_v4()::varchar, '3'
+        'P', 'S', '$GROOVY_SCRIPT', 'U', uuid_generate_v4(), '3'
     );
 
     v_process_id := nextval('ad_process_sq');
@@ -174,7 +174,7 @@ BEGIN
         v_process_id, 0, 0, 'Y', now(), 100, now(), 100,
         'MyProcess', 'My Process', 'Description',
         '3', 'U', 'N', 'N', 'N',
-        '@script:groovy:MyProcess', uuid_generate_v4()::varchar
+        '@script:groovy:MyProcess', uuid_generate_v4()
     );
 END \$\$;
 SQLEOF

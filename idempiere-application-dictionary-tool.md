@@ -64,7 +64,7 @@ INSERT INTO ad_tablename (
     created, createdby,       -- now(), 100
     updated, updatedby,       -- now(), 100
     -- table-specific columns
-    ad_tablename_uu           -- uuid_generate_v4()::varchar or pre-minted
+    ad_tablename_uu           -- uuid_generate_v4() or pre-minted
 ) VALUES (...);
 ```
 
@@ -81,7 +81,7 @@ INSERT INTO ad_OBJECT_access (
 )
 SELECT 0, 0,
     (SELECT ad_OBJECT_id FROM ad_OBJECT WHERE name = 'Object Name'),
-    ad_role_id, 'Y', now(), 100, now(), 100, uuid_generate_v4()::varchar
+    ad_role_id, 'Y', now(), 100, now(), 100, uuid_generate_v4()
 FROM ad_role
 WHERE isactive = 'Y'
   AND NOT EXISTS (
@@ -106,7 +106,7 @@ INSERT INTO ad_element (
 ) VALUES (
     nextval('ad_element_sq'), 0, 0, 'Y', now(), 100, now(), 100,
     'ANS_ButtonName', 'Button Display Name', 'Button Display Name',
-    'Description', 'U', uuid_generate_v4()::varchar
+    'Description', 'U', uuid_generate_v4()
 );
 
 -- 2. AD_Column (links to Info Window)
@@ -129,7 +129,7 @@ INSERT INTO ad_column (
     'N', 'Y',  -- isalwaysupdateable=Y for buttons on completed docs
     'N', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N',
     (SELECT ad_infowindow_id FROM ad_infowindow WHERE name = 'Target Window'),
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 
 -- 3. Database column
@@ -148,7 +148,7 @@ INSERT INTO ad_field (
     186,  -- ad_tab_id
     (SELECT ad_column_id FROM ad_column WHERE columnname = 'ANS_ButtonName' AND ad_table_id = 259),
     'Y', '@IsSOTrx@=Y & @Processed@=Y',  -- displaylogic optional
-    1, 'N', 590, 0, 'N', 'N', 'N', 'U', uuid_generate_v4()::varchar,
+    1, 'N', 590, 0, 'N', 'N', 'N', 'U', uuid_generate_v4(),
     'Y', 'N', 0, 2, 2
 );
 ```

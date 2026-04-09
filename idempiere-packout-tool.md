@@ -101,7 +101,7 @@ INSERT INTO ad_package_exp (
     'X', '1.0.0',
     'N', 'N',
     'Y', 'N',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -142,7 +142,7 @@ INSERT INTO ad_package_exp_detail (
     'D', 10, 'N', 'N',
     492,  -- ad_table_id for the target table
     'SELECT * FROM AD_PrintPaper WHERE AD_PrintPaper_UU = ''uuid-here''',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -198,7 +198,7 @@ VALUES (
     'D', 999, 'N', 'N',  -- High line number (last)
     50005,  -- AD_Package_Exp table
     'SELECT * FROM AD_Package_Exp WHERE AD_Package_Exp_UU = ''your-uuid-here''; AD_Package_Exp_Detail',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 

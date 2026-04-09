@@ -92,7 +92,7 @@ BEGIN
         NULL, -- ad_infowindow_id
         'U',  -- entitytype = User maintained
         'N',  -- iscentrallymaintained
-        uuid_generate_v4()::varchar
+        uuid_generate_v4()
     );
 
     RAISE NOTICE 'Created AD_Menu (ID: %)', v_menu_id;
@@ -117,7 +117,7 @@ BEGIN
         now(), 100, now(), 100,
         0,     -- parent_id = 0 (root level) or specific parent menu ID
         999,   -- seqno = 999 (append at end)
-        uuid_generate_v4()::varchar
+        uuid_generate_v4()
     );
 
     RAISE NOTICE 'Added to menu tree %', v_tree_id;
@@ -248,7 +248,7 @@ BEGIN
         'Storage Fee Allocation',
         'Creates invoices for sales orders with unshipped reserved quantities',
         'N', 'Y', 'N', 'P', v_process_id,
-        NULL, NULL, NULL, NULL, NULL, NULL, 'U', 'N', uuid_generate_v4()::varchar
+        NULL, NULL, NULL, NULL, NULL, NULL, 'U', 'N', uuid_generate_v4()
     );
 
     INSERT INTO ad_treenodeMM (
@@ -257,7 +257,7 @@ BEGIN
         parent_id, seqno, ad_treenodeMM_uu
     ) VALUES (
         v_tree_id, v_menu_id, 0, 0, 'Y', now(), 100, now(), 100,
-        0, 999, uuid_generate_v4()::varchar
+        0, 999, uuid_generate_v4()
     );
 END $$;
 ```

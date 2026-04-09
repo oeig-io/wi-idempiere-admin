@@ -41,7 +41,7 @@ INSERT INTO ad_rule (
     'Description',
     'P', 'S',
     'return "Success message"',
-    'U', uuid_generate_v4()::varchar, '3'
+    'U', uuid_generate_v4(), '3'
 );
 ```
 
@@ -69,7 +69,7 @@ INSERT INTO ad_process (
     '3', 'U', 'N', 'N',
     'Y',
     '@script:groovy:ScriptName',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -109,7 +109,7 @@ INSERT INTO ad_infoprocess (
     (SELECT ad_process_id FROM ad_process WHERE value = 'ScriptName'),
     10,
     'B',  -- Button
-    'U', uuid_generate_v4()::varchar
+    'U', uuid_generate_v4()
 );
 ```
 

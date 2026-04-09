@@ -58,7 +58,7 @@ INSERT INTO ad_rule (
     'Sets QtyEntered from storage when ANS_AttributeSetInstance_ID is selected.',
     'C', 'S',
     E'// Script content here - see examples below',
-    'U', uuid_generate_v4()::varchar, '3'
+    'U', uuid_generate_v4(), '3'
 );
 ```
 
@@ -202,7 +202,7 @@ return ""
             'groovy:OrderLineASIQtyCallout',
             'Order Line ASI Quantity Callout',
             'Sets QtyEntered from storage when ANS_AttributeSetInstance_ID is selected.',
-            'C', 'S', v_script, 'U', uuid_generate_v4()::varchar, '3'
+            'C', 'S', v_script, 'U', uuid_generate_v4(), '3'
         );
         RAISE NOTICE 'Created AD_Rule (ID: %)', v_rule_id;
     ELSE

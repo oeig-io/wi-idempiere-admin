@@ -75,7 +75,7 @@ Before calling a process via system-level API, grant access (idempotent):
 ```sql
 INSERT INTO ad_process_access (ad_process_id, ad_role_id, ad_client_id, ad_org_id, isactive,
     created, createdby, updated, updatedby, isreadwrite, ad_process_access_uu)
-SELECT v_process_id, ad_role_id, 0, 0, 'Y', now(), 100, now(), 100, 'Y', uuid_generate_v4()::varchar
+SELECT v_process_id, ad_role_id, 0, 0, 'Y', now(), 100, now(), 100, 'Y', uuid_generate_v4()
 FROM ad_role WHERE name = 'System API Access'
 AND NOT EXISTS (
     SELECT 1 FROM ad_process_access pa
@@ -309,7 +309,7 @@ Use `gen_random_uuid()` for UUID columns:
 
 ```sql
 INSERT INTO ad_role (ad_role_id, ad_role_uu, name, ...)
-VALUES (nextval('ad_role_sq'), gen_random_uuid()::varchar, 'My Role', ...);
+VALUES (nextval('ad_role_sq'), gen_random_uuid(), 'My Role', ...);
 ```
 
 ### Legacy: nextidfunc (Avoid)
@@ -336,7 +336,7 @@ BEGIN
         ad_role_id, ad_role_uu, ad_client_id, ad_org_id,
         name, isactive, created, createdby, updated, updatedby
     ) VALUES (
-        v_record_id, gen_random_uuid()::varchar, 1000000, 0,
+        v_record_id, gen_random_uuid(), 1000000, 0,
         'Department User', 'Y', now(), 100, now(), 100
     );
 

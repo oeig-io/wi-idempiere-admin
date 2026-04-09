@@ -40,7 +40,7 @@ INSERT INTO ad_infowindow (
     E'M_Product p
 LEFT OUTER JOIN M_ProductPrice pr ON (p.M_Product_ID=pr.M_Product_ID AND pr.IsActive=''Y'')
 LEFT OUTER JOIN M_AttributeSet pa ON (p.M_AttributeSet_ID=pa.M_AttributeSet_ID)',
-    'N', uuid_generate_v4()::varchar, 'N', 'N',
+    'N', uuid_generate_v4(), 'N', 'N',
     '1',  -- references seqno of sort column
     'Y', 'N', 0, 'Y', 0
 );
@@ -99,7 +99,7 @@ INSERT INTO ad_infocolumn (
     'N', 'N',
     'Y',  -- isdisplayed
     'N',  -- isquerycriteria
-    uuid_generate_v4()::varchar, 'U', 'ColumnName', 'Y', 'N', 'Y', 'N', 'N'
+    uuid_generate_v4(), 'U', 'ColumnName', 'Y', 'N', 'Y', 'N', 'N'
 );
 ```
 
@@ -126,7 +126,7 @@ INSERT INTO ad_infocolumn (
     'N', 'N',
     'N',  -- isdisplayed=N (hidden)
     'Y',  -- isquerycriteria=Y (filter)
-    uuid_generate_v4()::varchar, 'U', 'C_Order_ID', 'Y', 'N', 'Y', 'N', 'N',
+    uuid_generate_v4(), 'U', 'C_Order_ID', 'Y', 'N', 'Y', 'N', 'N',
     '=',
     '@C_Order_ID@'
 );

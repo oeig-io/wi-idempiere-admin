@@ -58,7 +58,7 @@ INSERT INTO ad_message (
 <br /><strong>Related Invoices:</strong><br />
 <em>(Invoice Date : Invoice # : Status : Total : Paid?)</em><br />{1}',
     'U',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -95,7 +95,7 @@ INSERT INTO ad_statusline (
         ORDER BY i.DateInvoiced DESC
     ), ''<br />'')',
     'U',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -122,7 +122,7 @@ INSERT INTO ad_statuslineusedin (
     'N',  -- N = Quick Info Widget (not status line)
     10,   -- Sequence for ordering multiple widgets
     'U',
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -249,7 +249,7 @@ INSERT INTO pa_dashboardcontent (
     'Y',  -- Show in dashboard
     'Y',  -- Show in login
     'Y',  -- Show title
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
@@ -270,7 +270,7 @@ BEGIN
         'ANS_QI_Last5Orders', 'I',
         '<br /><strong>Last 5 Orders For This BP:</strong><br />
 <em>(Date : Order # : Status : Total)</em><br />{0}',
-        'U', uuid_generate_v4()::varchar
+        'U', uuid_generate_v4()
     ) RETURNING ad_message_id INTO v_message_id;
 
     -- Step 2: Create the status line
@@ -288,7 +288,7 @@ BEGIN
             ORDER BY o.DateOrdered DESC, o.c_order_id DESC
             FETCH FIRST 5 ROWS ONLY
         ), ''<br />'')',
-        'U', uuid_generate_v4()::varchar
+        'U', uuid_generate_v4()
     ) RETURNING ad_statusline_id INTO v_statusline_id;
 
     -- Step 3: Attach to C_Order table as Quick Info Widget
@@ -302,7 +302,7 @@ BEGIN
         259,  -- C_Order table
         'N',  -- Quick Info Widget
         10,
-        'U', uuid_generate_v4()::varchar
+        'U', uuid_generate_v4()
     );
 END $$;
 ```

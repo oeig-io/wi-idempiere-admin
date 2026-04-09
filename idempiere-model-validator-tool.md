@@ -82,7 +82,7 @@ INSERT INTO ad_rule (
     'Calculates QtyOrdered from QtyEntered and UOM conversion',
     'T', 'S',
     E'// Script content here - see examples below',
-    'U', uuid_generate_v4()::varchar, '3'
+    'U', uuid_generate_v4(), '3'
 );
 ```
 
@@ -103,7 +103,7 @@ INSERT INTO ad_table_scriptvalidator (
     (SELECT ad_rule_id FROM ad_rule WHERE value = 'groovy:OrderLineUOMConversion'),
     'TBN',  -- Table Before New
     10,
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 
 -- Also register for updates
@@ -119,7 +119,7 @@ INSERT INTO ad_table_scriptvalidator (
     (SELECT ad_rule_id FROM ad_rule WHERE value = 'groovy:OrderLineUOMConversion'),
     'TBC',  -- Table Before Change
     10,
-    uuid_generate_v4()::varchar
+    uuid_generate_v4()
 );
 ```
 
