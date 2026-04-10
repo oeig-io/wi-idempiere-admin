@@ -24,6 +24,7 @@ Work instructions for planning and executing iDempiere changes.
   - [idempiere-process-tool.md](idempiere-process-tool.md) - Groovy processes (AD_Rule, AD_Process)
   - [idempiere-info-window-tool.md](idempiere-info-window-tool.md) - Info Windows (AD_InfoWindow, AD_InfoColumn)
 - [idempiere-code-validator-tool.md](idempiere-code-validator-tool.md) - audit Groovy/SQL for resource leaks and conventions
+- [idempiere-pull-request-tool.md](idempiere-pull-request-tool.md) - checklist and workflow for submitting PRs to iDempiere core
 - [idempiere-packout-tool.md](idempiere-packout-tool.md) - PackOut (2Pack) export records for portable artifact packaging
 - [idempiere-rest-api-tool.md](idempiere-rest-api-tool.md) - REST API patterns for authentication, CRUD, processes
 - [postgresql-logging-tool.md](postgresql-logging-tool.md) - PostgreSQL query logging for debugging iDempiere
