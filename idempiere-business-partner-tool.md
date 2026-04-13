@@ -276,6 +276,19 @@ INSERT INTO ad_user (...) VALUES (1000031, [CLIENT_ID], 0, 'Y', NULL, 'admin-use
 INSERT INTO ad_user_roles (...) VALUES (1000031, [CLIENT_ID], 0, 1000031, 1000001, 'Y', ...); -- ACME Admin role
 ```
 
+## Password Management
+
+### During Deploy (Before Hashing)
+
+Set passwords as plain text in SQL. The `deploy/20261231235900_hash_passwords.sh` script converts all plain text passwords to hashed values as a final step.
+
+### Post-Deploy (After Hashing Enabled)
+
+Once `USER_PASSWORD_HASH` sysconfig is `Y`, passwords cannot be set via direct SQL. Use `PUT` on the `ad_user` model via REST API with `{"Password":"newpassword"}` — iDempiere's MUser model layer hashes automatically. See "Update Record" in the REST API skill.
+
+> 📝 **Note** - The old `Reset Password` process (`AD_User_Password`, ID 288) is inactive. The REST API `PUT` on `ad_user` is the replacement.
+
+
 ## Verification
 
 Check user can log in:
