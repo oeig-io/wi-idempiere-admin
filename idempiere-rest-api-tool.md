@@ -13,6 +13,21 @@ metadata:
 
 The purpose of this document is to provide working patterns for the iDempiere REST API.
 
+This is important because the REST API is the primary integration point for external systems and deploy scripts that automate iDempiere configuration.
+
+## TOC
+
+- [Authentication](#authentication)
+- [Creating API Roles for Client Access](#creating-api-roles-for-client-access)
+- [Common ID Lookups](#common-id-lookups)
+- [Foreign Key References](#foreign-key-references)
+- [Create Record](#create-record)
+- [Nested Records](#nested-records)
+- [Run Process](#run-process)
+- [Query Records](#query-records)
+- [Error Checking](#error-checking)
+- [Generating IDs and UUIDs in SQL Scripts](#generating-ids-and-uuids-in-sql-scripts)
+
 ## Authentication
 
 Two-step process: get token, then select context. The credentials and role depend on which client you need.
@@ -39,6 +54,8 @@ SESSION_RESPONSE=$(curl -s -X PUT "${API_URL}/auth/tokens" \
 
 SESSION_TOKEN=$(echo "$SESSION_RESPONSE" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
 ```
+
+> ⚠️ **Warning** - The `clientId` in step 2 must be one of the clients returned in the step 1 response. If the user cannot see a client, the PUT returns `Invalid clientId`. See "Creating API Roles for Client Access" for how to grant client visibility.
 
 ### System-Level Calls
 
@@ -83,6 +100,82 @@ AND NOT EXISTS (
     WHERE pa.ad_process_id = v_process_id AND r.name = 'System API Access'
 );
 ```
+
+## Creating API Roles for Client Access
+
+The purpose of this section is to document how to create a dedicated API role for a specific tenant.
+
+This is important because several settings must be correct for the REST API to grant read/write access, and subtle mistakes (like a 2-character `userlevel` instead of 3) cause silent 403 errors.
+
+### Role Creation
+
+```sql
+INSERT INTO ad_role (
+    ad_role_id, ad_role_uu, ad_client_id, ad_org_id, name,
+    isactive, roletype, userlevel, ismanual,
+    iscanexport, iscanreport, isaccessallorgs,
+    created, createdby, updated, updatedby
+) VALUES (
+    nextval('ad_role_sq'), uuid_generate_v4(),
+    [CLIENT_ID], 0, 'ACME API',
+    'Y', 'WS', ' CO', 'N',   -- see userlevel warning below
+    'Y', 'Y', 'N',
+    now(), 100, now(), 100
+);
+```
+
+> ⚠️ **Warning** - `userlevel` must be exactly 3 characters in `SCO` positional format: `' CO'` (space-C-O). Using `'CO'` (2 chars) causes `canUpdate` to fail with 403 because `charAt(1)` returns `'O'` instead of `'C'`. The positions are: 0=System, 1=Client, 2=Organization.
+
+### Required Access Records
+
+After creating the role, these records are required:
+
+| Record | Purpose |
+|--------|---------|
+| `ad_role_orgaccess` | Role can operate in the client's organizations |
+| `ad_user_roles` with `ad_client_id=[CLIENT_ID]` | User sees the client at login (step 1 response) |
+| `ad_user_orgaccess` | User can log in to the client context |
+
+```sql
+-- Role org access
+INSERT INTO ad_role_orgaccess (ad_role_id, ad_client_id, ad_org_id, ...)
+VALUES (v_role_id, [CLIENT_ID], 0, ...);
+
+-- Link user to role (ad_client_id MUST match target client)
+INSERT INTO ad_user_roles (ad_user_id, ad_role_id, ad_client_id, ad_org_id, ...)
+VALUES (v_user_id, v_role_id, [CLIENT_ID], 0, ...);
+
+-- User org access (required for login)
+INSERT INTO ad_user_orgaccess (ad_user_id, ad_client_id, ad_org_id, ...)
+VALUES (v_user_id, [CLIENT_ID], 0, ...);
+```
+
+### Role Access Update
+
+After creating a role, run the **Role Access Update** process (ID 295) to populate window, table, process, form, workflow, and document action access records.
+
+```bash
+# Process slug
+SLUG=$(psqli -t -A -c "SELECT Slugify(value) FROM ad_process WHERE ad_process_id = 295;")
+# Returns: ad_role_accessupdate
+
+curl -s -X POST "${API_URL}/processes/${SLUG}" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $SESSION_TOKEN" \
+    -d "{\"model-name\":\"ad_role\",\"record-id\":${ROLE_ID}}"
+```
+
+> ⚠️ **Warning** - Do NOT manually insert `ad_table_access` or `ad_window_access` records. Explicit inclusion records trigger **whitelist mode** — the role loses access to all tables/windows not in the list. Let Role Access Update populate these records instead.
+
+### Mistakes to Avoid
+
+| Mistake | Symptom | Fix |
+|---------|---------|-----|
+| `userlevel='CO'` (2 chars) | 403 `Role does not have access` | Use `' CO'` (3 chars, leading space) |
+| `ad_user_roles.ad_client_id=0` | `Invalid clientId` on session PUT | Set to target client ID |
+| Missing `ad_user_orgaccess` | `Invalid clientId` on session PUT | Add record for target client |
+| Manual `ad_table_access` with `isexclude='N'` | 403 on tables not in the list | Remove records; use Role Access Update |
+| Missing Role Access Update | 403 on all writes | Run process ID 295 on the role |
 
 ## Common ID Lookups
 
