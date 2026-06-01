@@ -22,11 +22,27 @@ This document references the iDempiere REST API. See [idempiere-rest-api-tool.md
 - [Core Principles](#core-principles)
 - [Business Partner Types](#business-partner-types)
 - [Creation Rules](#creation-rules)
+  - [Key Fields](#key-fields)
 - [BP with Contact](#bp-with-contact)
+  - [SQL Creation](#sql-creation)
+  - [REST API Creation](#rest-api-creation)
 - [Contact with Login Access](#contact-with-login-access)
+  - [During Deploy/ (SQL Method)](#during-deploy-sql-method)
+  - [Post-Deploy (API Method)](#post-deploy-api-method)
 - [Standalone Login Users](#standalone-login-users)
+  - [Creation](#creation)
 - [SQL vs API Decision](#sql-vs-api-decision)
+- [BP Accounting Records (After-Save)](#bp-accounting-records-after-save)
+  - [Detecting the gap](#detecting-the-gap)
+  - [Fix: run Copy Accounts](#fix-run-copy-accounts)
 - [Examples](#examples)
+  - [Example 1: Simple Vendor with Contact](#example-1-simple-vendor-with-contact)
+  - [Example 2: Employee with iDempiere Access](#example-2-employee-with-idempiere-access)
+  - [Example 3: Standalone Admin User](#example-3-standalone-admin-user)
+- [Password Management](#password-management)
+  - [During Deploy (Before Hashing)](#during-deploy-before-hashing)
+  - [Post-Deploy (After Hashing Enabled)](#post-deploy-after-hashing-enabled)
+- [Verification](#verification)
 
 ## Core Principles
 
@@ -36,6 +52,7 @@ All business partner records follow these immutable rules:
 - **Organization Independence**: All BPs and contacts use `ad_org_id=0` (accessible across all orgs)
 - **BP Groups**: Use "Standard" group unless business rules specify otherwise
 - **Single AD_User**: One record serves as both contact and login (if needed)
+- **Accounting Records**: The `c_bpartner` row must always be created through the model layer (REST API `.sh`) so the `MBPartner` after-save event generates accounting records. Direct SQL `INSERT` into `c_bpartner` skips this. See [BP Accounting Records (After-Save)](#bp-accounting-records-after-save).
 
 ## Business Partner Types
 
@@ -228,12 +245,49 @@ POST /api/v1/models/ad_user
 
 ## SQL vs API Decision
 
-| Scenario | Method | Reason |
-|----------|--------|--------|
-| Deploy/ phase scripts | SQL | Passwords auto-hashed by deploy/20261231235900_hash_passwords.sh |
-| Post-deployment | REST API | API handles password hashing |
-| Batch imports | SQL | Faster for large datasets |
-| Interactive creation | REST API | Real-time validation, immediate feedback |
+> ⚠️ **Warning** - This choice applies to the `ad_user` / `ad_user_roles` rows. The `c_bpartner` row itself should be created through the **model layer** (REST API `.sh`) whenever possible, because the `MBPartner` after-save event creates the BP's accounting records. If you must create `c_bpartner` via SQL (e.g., large batch imports), you **must** run the Copy Accounts process afterward — see [BP Accounting Records (After-Save)](#bp-accounting-records-after-save).
+
+| Scenario | `c_bpartner` Method | `ad_user` Method | Reason |
+|----------|--------|--------|--------|
+| Deploy/ phase scripts | REST API `.sh` (preferred) | SQL | Model layer creates accounting; passwords auto-hashed by deploy/20261231235900_hash_passwords.sh |
+| Deploy/ batch imports (many BPs) | SQL + Copy Accounts | SQL | SQL is faster; Copy Accounts backfills the accounting records the after-save event would have created |
+| Post-deployment | REST API | REST API | API handles password hashing and after-save events |
+| Interactive creation | REST API | REST API | Real-time validation, after-save events, immediate feedback |
+
+## BP Accounting Records (After-Save)
+
+When a `c_bpartner` is created through the **model layer** (REST API, UI, or import process), `MBPartner`'s after-save event automatically creates its per-BP accounting records (`c_bp_customer_acct`, `c_bp_vendor_acct`) from the BP Group's accounting defaults.
+
+**Direct SQL `INSERT` into `c_bpartner` bypasses this event**, leaving the BP with **no accounting records**. Such a BP cannot be used in posted transactions correctly until its accounting is generated.
+
+### Detecting the gap
+
+```sql
+-- BPs missing customer accounting records
+SELECT bp.value, bp.name
+FROM c_bpartner bp
+WHERE bp.ad_client_id = ${CLIENT_ID}
+  AND NOT EXISTS (
+    SELECT 1 FROM c_bp_customer_acct c WHERE c.c_bpartner_id = bp.c_bpartner_id
+  );
+```
+
+### Fix: run Copy Accounts
+
+The core **Copy Accounts** process (`c_bp_group_acct_copy`) copies the BP Group's account template onto every BP in the group, inserting any missing per-BP accounting records. It is idempotent — it only inserts what is missing. Run it via REST API in a `.sh` deploy step after any SQL-based BP creation:
+
+```bash
+# Authenticate as <CLIENT>-admin, select client context, then per BP group:
+POST /api/v1/processes/c_bp_group_acct_copy
+{
+  "C_BP_Group_ID": <bp_group_id>,
+  "C_AcctSchema_ID": <acct_schema_id>
+}
+```
+
+Result summary looks like `Created=20, Updated=22` (records inserted/refreshed). Verify afterward that every BP has `c_bp_customer_acct` and `c_bp_vendor_acct` rows.
+
+> 🔗 **Reference** - Working example: `idempiere-golive-deploy/deploy/20260601195707_copy_bp_group_accounts.sh` (and the ANS repo's `20260522000400_import_customers.sh`, Step 4).
 
 ## Examples
 

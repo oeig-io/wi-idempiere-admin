@@ -22,6 +22,8 @@ AD_Tree_Favorite (one per user)
     └── AD_Tree_Favorite_Node (menu items and folders)
 ```
 
+> 🔗 **Reference** - Favorites use their own node table (`AD_Tree_Favorite_Node`). For the general tree model shared with the organization and menu trees, see the tree maintenance tool.
+
 ## AD_Tree_Favorite
 
 One header record per user. All favorites for a user link to this record via `ad_tree_favorite_id`.

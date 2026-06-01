@@ -31,6 +31,8 @@ AD_Menu (menu metadata)
 | AD_Menu | Menu entry metadata (name, action, process link) | ad_menu_id, name, action, ad_process_id |
 | AD_TreeNodeMM | Tree structure (parent-child relationships) | ad_tree_id, node_id, parent_id, seqno |
 
+> 🔗 **Reference** - `AD_TreeNodeMM` is the menu-specific node table. For the general tree model (finding a tree by treetype, `parent_id`/`seqno` placement, idempotent maintenance) shared across organization and other trees, see the tree maintenance tool.
+
 ## Menu Entry Pattern
 
 Creates a menu entry that appears in the main menu tree.

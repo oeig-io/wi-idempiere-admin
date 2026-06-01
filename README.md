@@ -23,6 +23,7 @@ Work instructions for planning and executing iDempiere changes.
   - [idempiere-model-validator-tool.md](idempiere-model-validator-tool.md) - Groovy model validators (AD_Rule, AD_Table_ScriptValidator) - save events
   - [idempiere-process-tool.md](idempiere-process-tool.md) - Groovy processes (AD_Rule, AD_Process)
   - [idempiere-info-window-tool.md](idempiere-info-window-tool.md) - Info Windows (AD_InfoWindow, AD_InfoColumn)
+- [idempiere-tree-maintenance-tool.md](idempiere-tree-maintenance-tool.md) - maintain hierarchy trees (AD_Tree, AD_TreeNode); organization tree placement and summary flags
 - [idempiere-deploy-sql-tool.md](idempiere-deploy-sql-tool.md) - conventions for portable SQL deploy scripts (variable substitution, dynamic lookups, .sql vs .sh)
 - [idempiere-code-validator-tool.md](idempiere-code-validator-tool.md) - audit Groovy/SQL for resource leaks and conventions
 - [idempiere-pull-request-tool.md](idempiere-pull-request-tool.md) - checklist and workflow for submitting PRs to iDempiere core
