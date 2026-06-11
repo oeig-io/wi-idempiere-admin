@@ -187,7 +187,9 @@ The Product window => Price subtab demonstrates the link table pattern:
 3. Run Create/Complete Table process (or CopyColumnsFromTable for link tables that omit Name/Value)
 4. Add FK columns to parent tables via SQL
 5. Sync database once at end
-6. Add as subtab (not standalone window), then create fields using [idempiere-column-create-tool.md](idempiere-column-create-tool.md) and the Create Fields process
+6. Add as subtab (not standalone window), then run the Create Fields process (`AD_Tab_CreateFields`) to generate field records
+
+> **⚠️ Warning** - Use the Create Fields process rather than hand-crafting `AD_Field` rows. A subtab missing field records for the key column, parent link column, `AD_Client_ID`, or `AD_Org_ID` fails to save with a misleading "Changes ignored" message and persists no record. See Required Fields for Editable Tabs in [idempiere-window-tool.md](idempiere-window-tool.md).
 
 > **📝 Note** - See Product window => Price subtab in Application Dictionary for live example.
 

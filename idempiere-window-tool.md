@@ -23,6 +23,23 @@ AD_Window (window definition)
         └── AD_Field (fields within tab)
 ```
 
+## Required Fields for Editable Tabs
+
+The purpose of this section is to identify the `AD_Field` records every editable tab must have.
+
+This is important because a tab missing these fields fails to save with a misleading **"Changes ignored"** message and persists no record — even though the underlying table, columns, and REST inserts all work correctly. This silent failure is easy to misdiagnose.
+
+Every editable tab needs an `AD_Field` record for:
+
+| Column | Why it is required | Typical visibility |
+|--------|--------------------|--------------------|
+| Key column (e.g. `ACME_Thing_ID`) | Framework binds the record key | Hidden (`IsDisplayed='N'`, `IsDisplayedGrid='N'`) |
+| Parent link column (child tabs only) | Framework binds the parent key on save | Hidden (`IsDisplayed='N'`, `IsDisplayedGrid='N'`) |
+| `AD_Client_ID` | Critical on every record | Read-only; detail only |
+| `AD_Org_ID` | Critical on every record | Read-only; detail and grid |
+
+> 💡 **Prefer the Create Fields process** (`AD_Tab` => Create Fields, process `AD_Tab_CreateFields`). It creates field records for all columns automatically and never omits the system fields above. Hand-crafting `AD_Field` rows via SQL is error-prone — if you must, include every row in the table above. The Sales Order => Order Line subtab is a good reference layout.
+
 ## Field Layout Concepts
 
 ### Positioning Fields (Modern Approach)
